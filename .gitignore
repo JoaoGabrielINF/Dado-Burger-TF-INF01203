@@ -55,7 +55,7 @@ dkms.conf
 *.dwo
 
 # VS Code
-.vscode/
+.vscode
 
 # Executáveis gerados pela compilação
 main.exe
