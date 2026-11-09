@@ -26,7 +26,7 @@
 /** Paciencia maxima medida em turnos dos clientes no modo difícil */
 #define PACIENCIA_MAXIMA_DIFICIL 12
 
-/** Validade dos produtos perecíveis medida em turnos */
+/** Validade dos char*s perecíveis medida em turnos */
 #define TURNOS_PERECIVEIS 9
 
 /** Simbolo do pão em pedidos.txt */
