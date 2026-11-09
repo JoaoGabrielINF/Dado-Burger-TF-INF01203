@@ -2,29 +2,30 @@
 #include "../models.h"
 #include <stdbool.h>
 
-typedef struct str_Nodo Nodo;
+typedef struct str_NodoPilha NodoPilha;
 
 /**
- * @brief Representação de um nodo da pilha, que contem um ingrediente e um ponteiro para o proximo nodo
+ * @brief Representação de um NodoPilha da pilha, que contem um ingrediente e um ponteiro para o proximo NodoPilha
  */
-struct str_Nodo {
-    Nodo *prox;
+struct str_NodoPilha {
+    NodoPilha *prox;
     char ingrediente;
 };
 
 /**
- * @brief Representação da pilha, que contem um ponteiro para o nodo do topo
+ * @brief Representação da pilha, que contem um ponteiro para o NodoPilha do topo
  */
 
 typedef struct {
-    Nodo *topo;
+    NodoPilha *topo;
 } PilhaHamburger;
 
 /**
  * @brief Inicializa uma pilha
  * @param[in, out] p ponteiro para o topo da pilha (ainda não inicializado) 
  */
-void inicializa(PilhaHamburger *p);
+
+void inicializaPilha(PilhaHamburger *p);
 
 /**
  * @brief 
@@ -32,7 +33,8 @@ void inicializa(PilhaHamburger *p);
  * @return true a pilha está vazia
  * @return false a pilha não está vazia
  */
-bool estaVazia(const PilhaHamburger *p);
+
+bool estaVaziaPilha(const PilhaHamburger *p);
 
 /**
  * @brief Coloca um ingrediente no topo da pilha
@@ -41,27 +43,28 @@ bool estaVazia(const PilhaHamburger *p);
  * @return true a operação foi realizada com sucesso
  * @return false não foi possivel realizar a operação
  */
-bool push(PilhaHamburger *p, char ingrediente);
+
+bool pushPilha(PilhaHamburger *p, char ingrediente);
 
 /**
  * @brief  Retira um ingrediente do topo da pilha
  * @param [in, out] p ponteiro para o topo da pilha
- * @param [in, out] ingrediente ponteiro para um char, ao final da execução ele terá o valor do char removido na função 
+ * @param [in, out] ingredienteRemovido ponteiro para um char, ao final da execução ele terá o ingrediente do char removido na função 
  * @return true a operação foi realizada com sucesso 
  * @return false não foi possivel realizar a operação
  */
 
-bool pop(PilhaHamburger *p, char *ingrediente);
+bool popPilha(PilhaHamburger *p, char *ingredienteRemovido);
 
 /**
  * @brief Descobre qual é o elemento do topo da pilha
  * @param [in] p ponteiro para o topo da pilha 
- * @param [in, out] ingrediente ponteiro para um char, ao final da execução ele terá o valor do char removido na função 
+ * @param [in, out] ingrediente ponteiro para um char, ao final da execução ele terá o ingrediente do char removido na função 
  * @return true a operação foi realizada com sucesso, topo atribuído ao ingrediente
  * @return false a ação não pôde ser realizada
  */
 
-bool topo(const PilhaHamburger *p, char *ingrediente);
+bool topoPilha(const PilhaHamburger *p, char *ingrediente);
 
 /**
  * @brief Devolve o tamanho da pilha
@@ -69,4 +72,4 @@ bool topo(const PilhaHamburger *p, char *ingrediente);
  * @return int tamanho da pilha
  */
 
-int tamanho(const PilhaHamburger *p);
+int tamanhoPilha(const PilhaHamburger *p);
