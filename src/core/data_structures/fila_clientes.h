@@ -1,22 +1,24 @@
 #pragma once
 #include "../models.h"
 
-typedef struct str_Nodo Nodo;
+typedef struct str_NodoFila NodoFila;
 
 /**
  * @brief Representação de um nodo da fila, contem um ponteiro para o proximo nodo da fila e um cliente.
  */
-struct str_Nodo {
-    Nodo *prox; /**<Ponteiro para o próximo nodo da fila */
+
+struct str_NodoFila {
+    NodoFila *prox; /**<Ponteiro para o próximo nodo da fila */
     Cliente cliente; /**<Cliente do nodo atual */
 };
 
 /**
  * @brief Representação da fila de clientes, contem um ponteiro para o inicio da fila e um ponteiro para o final da fila
  */
+
 typedef struct {
-    Nodo *frente; /**<Ponteiro para o primeiro elemento da fila */
-    Nodo *final; /**<Ponteiro para o ultimo elemento da fila */
+    NodoFila *frente; /**<Ponteiro para o primeiro elemento da fila */
+    NodoFila *final; /**<Ponteiro para o ultimo elemento da fila */
 } FilaClientes;
 
 /**
@@ -24,7 +26,7 @@ typedef struct {
  * @param [in, out] f ponteiros de inicio e fim da fila
  */
 
-void inicializa(FilaClientes *f);
+void inicializaFila(FilaClientes *f);
 
 /**
  * @brief Descobre se a fila está vazia
@@ -33,7 +35,7 @@ void inicializa(FilaClientes *f);
  * @return false a fila não está vazia 
  */
 
-bool estaVazia(const FilaClientes *f);
+bool estaVaziaFila(const FilaClientes *f);
 
 /**
  * @brief Coloca um cliente na fila
@@ -43,7 +45,7 @@ bool estaVazia(const FilaClientes *f);
  * @return false a ação não pôde ser realizada
  */
 
-bool enqueue(FilaClientes *f, const Cliente *cliente);
+bool enqueueFila(FilaClientes *f, const Cliente *cliente);
 
 /**
  * @brief Retira um cliente do inicio da fila
@@ -53,7 +55,7 @@ bool enqueue(FilaClientes *f, const Cliente *cliente);
  * @return false a ação não pôde ser realizada
  */
 
-bool dequeue(FilaClientes *f, Cliente *cliente);
+bool dequeueFila(FilaClientes *f, Cliente *cliente);
 
 /**
  * @brief Descobre qual é o primeiro cliente da fila
@@ -63,7 +65,7 @@ bool dequeue(FilaClientes *f, Cliente *cliente);
  * @return false a ação não pôde ser realizada
  */
 
-bool frente(const FilaClientes *f, Cliente *cliente);
+bool frenteFila(const FilaClientes *f, Cliente *cliente);
 
 /**
  * @brief Descobre o tamanho da fila
@@ -71,4 +73,4 @@ bool frente(const FilaClientes *f, Cliente *cliente);
  * @return int tamanho da fila
  */
 
-int tamanho(const FilaClientes *f);
+int tamanhoFila(const FilaClientes *f);
