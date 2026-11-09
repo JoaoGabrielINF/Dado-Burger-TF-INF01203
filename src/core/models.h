@@ -1,9 +1,10 @@
+#pragma once
 #include <stdbool.h>
 #include "constants.h"
-#include "data_structures/fila.h"
+#include "data_structures/fila_clientes.h"
 #include "data_structures/heap.h"
-#include "data_structures/listaenc.h"
-#include "data_structures/pilha.h"
+#include "data_structures/lista_receita.h"
+#include "data_structures/pilha_hamburger.h"
 #include "raylib.h"
 
 /**
@@ -29,7 +30,7 @@ typedef struct {
   */
  typedef struct{
     int pacienciaAtual; /**Paciencia maxima do cliente atual */
-    Pedido pedido; /**<Codigo do pedido atual - à ser selecionado aleatoriamente entre os codigos dos produtos da AVL */
+    Pedido pedido; /**<Codigo do pedido atual - à ser selecionado aleatoriamente entre os codigos dos char*s da AVL */
     Animacao animacao;/**<Animacao do cliente */
     Vector2 posicao; /**<Posicao em pixel do cliente */
     TileAtual tileAtual; /**<Tile ocupado pelo cliente */
