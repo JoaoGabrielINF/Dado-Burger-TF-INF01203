@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "constants.h"
 #include "data_structures/fila_clientes.h"
-#include "data_structures/heap.h"
+#include "data_structures/heap_estoque.h"
 #include "data_structures/lista_receita.h"
 #include "data_structures/pilha_hamburger.h"
 #include "raylib.h"
@@ -11,10 +11,10 @@
  * @brief Representação e categorização individual de cada alimento
  */
 typedef struct {
-    char alimento; /**< Caractere do alimento */
-    bool preparo; /**<Queijos, Cebola, Tomate, Carne, Ovo, Bacon */
-    bool perecivel; /**<carne, ovo frito, bacon - frituras */
- } Alimentos;
+    char simboloAlimento; /**< Caractere do alimento */
+    TipoAlimento tipoAlimento; /**< ENUM que diz se o alimento é perecível, perene ou ilimitado  */
+    int validade /**<Turno de validade do alimento - se houver - */
+ } Alimento;
 
  /**
   * @brief Posicao discreta no mapa baseada em lihna e coluna
@@ -70,6 +70,7 @@ typedef struct {
 typedef struct {
     DificuldadeJogo dificuldade; /**<Dificuldade do jogo selecionada */
     Jogador jogador; /**<Personagem do jogador */
+    int turnoAtual; /**<Turno atual em que o jogo se encontra */
     FilaClientes filaClientes; /**<Fila de clientes */
     int pontuacao; /**<Pontuacao obtida pelo jogador */
     TelaAtual telaAual; /**<Tela atual que o jogo está apresentando */
@@ -83,8 +84,7 @@ typedef struct {
 
 typedef struct {
     Vector2 posicao; /**<Posição atual do jogador em pixel */
-    int turnoAtual; /**<Turno atual em que o jogo se encontra */
-    HeapEstoque heapEstoque; /**<Estoque armazenado em Heap */
+    HeapEstoque heapEstoque; /**<Estoque de perecíveis armazenado em Heap */
     float velocidade; /**<Velocidade do jogador */
     TileAtual tile_atual; /**<Tile ocupado pelo jogador */
     Animacao animacao; /**<Animacao do jogador */

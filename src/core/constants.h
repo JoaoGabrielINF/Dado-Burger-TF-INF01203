@@ -68,7 +68,14 @@
 /** Definição de tempos */
 #define TURNOS_COZIMENTO 3 
 
-/**
+
+ typedef enum {
+    ILIMITADO = 0,
+    PERENE = 1,
+    PERECIVEL = 2
+ } TipoAlimento;
+
+ /**
  * @brief Representa qual o equipamento utilizado na cozinha
  */
 
