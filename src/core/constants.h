@@ -2,12 +2,12 @@
 
 #pragma once
 /** Numero de linhas da matriz do mapa */
-#define MAPA_LINHAS 30
+#define MAPA_LINHAS 16
 /** Numero de colunas da matriz do mapa */
-#define MAPA_COLUNAS 30
+#define MAPA_COLUNAS 32
 
 /** Tamanho de cada tile em pixels */
-#define TILE_SIZE 30
+#define TILE_SIZE 40
 
 /** Numero de clientes por partida */
 #define CLIENTES_POR_PARTIDA 7
@@ -20,6 +20,21 @@
 
 /** Altura total da janela em pixels incluindo a HUD */
 #define JANELA_ALTURA (MAPA_LINHAS * TILE_SIZE + HUD_ALTURA)
+
+#define TAMANHO_FONTE_BOTAO   (JANELA_ALTURA * 0.05f)   /* ~36 */
+#define ESPACO_FONTE 2.0f
+
+#define LARGURA_BOTAO_INICIO (JANELA_LARGURA * (380.0f / 1920.0f))
+#define ALTURA_BOTAO_INICIO (JANELA_ALTURA * (85.0f / 1080.0f))
+#define X_BOTAO_INICIO (JANELA_LARGURA * (1380.0f / 1920.0f))  // Centralizado na área livre da direita
+#define Y_BOTAO_INICIO (JANELA_ALTURA / 2 - ALTURA_BOTAO_INICIO / 2)  // Altura inicial (abaixo das lâmpadas da coifa)
+#define ESPACAMENTO_BOTAO_INICIO (JANELA_ALTURA * (30.0f / 1080.0f))
+
+
+#define ALTURA_DISPLAY_INICIO 340.0f
+#define LARGURA_DISPLAY_INICIO 350.0f
+#define Y_DISPLAY_INICIO (Y_BOTAO_INICIO + ALTURA_BOTAO_INICIO / 2 - ALTURA_DISPLAY_INICIO / 2 )
+#define X_DISPLAY_INICIO (X_BOTAO_INICIO + LARGURA_BOTAO_INICIO / 2 - LARGURA_DISPLAY_INICIO / 2)
 
 /** Paciencia maxima medida em turnos dos clientes no modo fácil */
 #define PACIENCIA_MAXIMA_FACIL 20

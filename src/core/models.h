@@ -30,7 +30,7 @@ typedef struct {
     int turnoAtual; /**< Turno atual em que o jogo se encontra */
     FilaClientes filaClientes; /**< Fila de clientes */
     int pontuacao; /**< Pontuacao obtida pelo jogador */
-    TelaAtual telaAual; /**< Tela atual que o jogo está apresentando */
+    TelaAtual telaAtual; /**< Tela atual que o jogo está apresentando */
     bool jogando; /**<B ooleano para saber se o usuario está em uma partida ou não */
     float tempo;
 } Jogo;
