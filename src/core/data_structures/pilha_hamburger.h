@@ -1,5 +1,4 @@
 #pragma once
-#include "../models.h"
 #include <stdbool.h>
 
 typedef struct str_NodoPilha NodoPilha;
@@ -8,8 +7,8 @@ typedef struct str_NodoPilha NodoPilha;
  * @brief Representação de um NodoPilha da pilha, que contem um ingrediente e um ponteiro para o proximo NodoPilha
  */
 struct str_NodoPilha {
-    NodoPilha *prox;
-    char ingrediente;
+    NodoPilha *prox; /**< Ponteiro para o próximo nodo */
+    char ingrediente; /**< Ingrediente deste nodo */
 };
 
 /**
@@ -17,7 +16,7 @@ struct str_NodoPilha {
  */
 
 typedef struct {
-    NodoPilha *topo;
+    NodoPilha *topo; /**< Ponteiro para o topo da pilha */
 } PilhaHamburger;
 
 /**

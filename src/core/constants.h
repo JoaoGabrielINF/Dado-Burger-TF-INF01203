@@ -1,5 +1,6 @@
 
 
+#pragma once
 /** Numero de linhas da matriz do mapa */
 #define MAPA_LINHAS 30
 /** Numero de colunas da matriz do mapa */
@@ -7,6 +8,9 @@
 
 /** Tamanho de cada tile em pixels */
 #define TILE_SIZE 30
+
+/** Numero de clientes por partida */
+#define CLIENTES_POR_PARTIDA 7
 
 /** Altura reservada para a HUD em pixels */
 #define HUD_ALTURA 80
@@ -65,14 +69,22 @@
 /** Simbolo do bacon em pedidos.txt */
 #define BACON_SIMBOLO 'b'
 
+/** Simbolo do fogão em tela_jogo_cozinha.txt */
+#define FOGAO_SIMBOLO 'f'
+
+/** Simbolo da bancada em tela_jogo_cozinha.txt */
+#define BANCADA_SIMBOLO 'c'
+
+/** Simbolo da tábua em tela_jogo_cozinha.txt */
+#define TABUA_SIMBOLO 'u'
+
 /** Definição de tempos */
 #define TURNOS_COZIMENTO 3 
 
-
  typedef enum {
-    ILIMITADO = 0,
-    PERENE = 1,
-    PERECIVEL = 2
+    ILIMITADO = 0, /**< Alimento que não acaba */
+    PERENE = 1, /**< Alimento que acaba mas não tem validade */
+    PERECIVEL = 2 /**< Alimento que acaba e possui validade */
  } TipoAlimento;
 
  /**
@@ -80,9 +92,9 @@
  */
 
 typedef enum {
-    FOGAO = 0,
-    TABUA = 1,
-    BANCADA = 2
+    FOGAO = 0, /**< Representação fogão*/
+    TABUA = 1, /**< Representação tábua */
+    BANCADA = 2 /**< Representação bancada */
 } MateriaisCozinha;
 
 /**
@@ -92,9 +104,9 @@ typedef enum {
 typedef enum {
     PARADO = 0, /**< Animação da entidade parada */
     ANDANDO_DIREITA = 1, /**< Animação da entidade andando para a direita */
-    ANDANDO_ESQUERDA = 2,
+    ANDANDO_ESQUERDA = 2, /**< Animação da entidade andando para a esquerda */
     ANDANDO_CIMA = 3, /**< Animação da entidade andando para a esquerda */
-    ANDANDO_BAIXO = 4
+    ANDANDO_BAIXO = 4 /**< Animação da entidade andando para baixo */
 } TipoAnimacao;
 
 /**
@@ -102,9 +114,9 @@ typedef enum {
  */
 
 typedef enum {
-    FACIL = 0,
-    MEDIO = 1,
-    DIFICIL = 2
+    FACIL = 0, /**< Representação da dificuldade fácil */
+    MEDIO = 1, /**< Representação da dificuldade média */
+    DIFICIL = 2 /**< Representação da dificuldade difícil */
 } DificuldadeJogo;
 
 /**
@@ -112,12 +124,12 @@ typedef enum {
  */
 
 typedef enum {
-    MENU = 0,
-    COMO_JOGAR = 1,
-    HISTORICO = 2,
-    ESCOLHER_DIFICULDADE = 3,
-    RECEPCAO = 4,
-    COZINHA = 5,
-    VITORIA = 6,
-    DERROTA = 7
+    MENU = 0, /**< Representação da tela menu */
+    COMO_JOGAR = 1, /**< Representação da tela como jogar */
+    HISTORICO = 2, /**< Representação da tela histórico */
+    ESCOLHER_DIFICULDADE = 3, /**< Representação da tela de escolher a dificuldade */
+    RECEPCAO = 4, /**< Representação da tela da recepção */
+    COZINHA = 5, /**< Representação da tela da cozinha */
+    VITORIA = 6, /**< Representação da tela de vitória */
+    DERROTA = 7 /**< Representação da tela de derrota */
  } TelaAtual;

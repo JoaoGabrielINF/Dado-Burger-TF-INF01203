@@ -52,9 +52,9 @@ bool removerHeap(HeapEstoque *heap, Alimento* alimento){
     return true;
 }
 
-bool consultarTopoHeap(HeapEstoque *heap, const Jogo *jogo, Alimento *alimento){
-    if(heap->estoquePerecivel[0].validade == jogo->turnoAtual){
-        while(heap->estoquePerecivel[0].validade == jogo->turnoAtual){
+bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, Alimento *alimento){
+    if(heap->estoquePerecivel[0].validade == turno_atual){
+        while(heap->estoquePerecivel[0].validade == turno_atual){
             removerHeap(heap, alimento);
         }
         return true;

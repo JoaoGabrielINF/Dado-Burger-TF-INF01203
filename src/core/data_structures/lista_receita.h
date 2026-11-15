@@ -1,5 +1,5 @@
 #pragma once
-#include "../models.h"
+#include <stdbool.h>
 
 typedef struct str_NodoLista NodoLista;
 
@@ -7,8 +7,8 @@ typedef struct str_NodoLista NodoLista;
  * @brief Representação de um nodo da lista, contem um ponteiro para o proximo nodo e um ingrediente
  */
 struct str_NodoLista {
-    NodoLista *prox;
-    char ingrediente;
+    NodoLista *prox; /**< Ponteiro para o próximo nodo da lista */
+    char ingrediente; /**< Caractere do ingrediente do nodo */
 };
 
 /**
@@ -16,7 +16,7 @@ struct str_NodoLista {
  * 
  */
 typedef struct {
-    NodoLista *ini;
+    NodoLista *ini;  /**< Ponteiro para o início da lista */
 } ListaReceita;
 
 /**

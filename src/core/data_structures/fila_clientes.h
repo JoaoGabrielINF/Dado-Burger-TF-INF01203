@@ -1,5 +1,5 @@
 #pragma once
-#include "../models.h"
+#include "../cliente.h"
 
 typedef struct str_NodoFila NodoFila;
 
@@ -8,8 +8,8 @@ typedef struct str_NodoFila NodoFila;
  */
 
 struct str_NodoFila {
-    NodoFila *prox; /**<Ponteiro para o próximo nodo da fila */
-    Cliente cliente; /**<Cliente do nodo atual */
+    NodoFila *prox; /**< Ponteiro para o próximo nodo da fila */
+    Cliente cliente; /**< Cliente do nodo atual */
 };
 
 /**
@@ -17,8 +17,8 @@ struct str_NodoFila {
  */
 
 typedef struct {
-    NodoFila *frente; /**<Ponteiro para o primeiro elemento da fila */
-    NodoFila *final; /**<Ponteiro para o ultimo elemento da fila */
+    NodoFila *frente; /**< Ponteiro para o primeiro elemento da fila */
+    NodoFila *final; /**< Ponteiro para o ultimo elemento da fila */
 } FilaClientes;
 
 /**
