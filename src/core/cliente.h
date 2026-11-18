@@ -7,22 +7,23 @@
   */
 
 typedef struct {
-    int cod; /**< Codigo da receita à ser preparada */
-    ListaReceita receitaPedido; /**< Lista de ingredientes necessários - receita */
-    PilhaHamburger pilhaHamburger; /**< Pilha para a montagem do hamburger */
-    bool pedidoPronto; /**< Booleano para saber se o pedido está pronto */
+    int cod; /**< Código da receita a ser preparada */
+    ListaReceita receita_pedido; /**< Ingredientes necessários para a receita */
+    PilhaHamburger pilha_hamburger; /**< Ingredientes montados para o hambúrguer */
+    bool pedido_pronto; /**< Indica se o pedido está pronto */
  } Pedido;
 
  /**
-  * @brief Estado completo do cliente durante a partida
+  * @brief Estado completo de um cliente genérico durante a partida
   */
 
  typedef struct{
-    int pacienciaAtual; /**< Paciência maxima do cliente atual */
-    Pedido pedido; /**< Codigo do pedido atual - à ser selecionado aleatoriamente entre os codigos dos char*s da AVL */
-    Animacao animacao;/**< Animacao do cliente */
-    Vector2 posicao; /**< Posicao em pixel do cliente */
-    TileAtual tileAtual; /**< Tile ocupado pelo cliente */
-    float velocidade; /**< Velocidade do cliente ao andar na fila */
-    TileAtual tile_inicial; /**< Tile que o cliente vai spawnar */
+    int paciencia_atual; /**< Paciência restante do cliente */
+    Pedido pedido; /**< Pedido atual do cliente */
+    Animacao animacao; /**< Animação do cliente */
+    Vector2 posicao; /**< Posição do cliente em pixels */
+    TileAtual tile_atual; /**< Tile ocupado pelo cliente */
+    float velocidade; /**< Velocidade de movimento do cliente na fila */
+    TileAtual tile_inicial; /**< Tile inicial do cliente */
+    int textura_atual; /**< Índice da textura atual do cliente */
  } Cliente;

@@ -30,10 +30,10 @@ void siftUp(Alimento a[], int i) {
 }
 
 bool inserirHeap(HeapEstoque *heap, const Alimento alimento){
-    if(alimento.tipoAlimento == PERECIVEL && alimento.simboloAlimento == heap->alimento){
-        heap->estoquePerecivel[heap->tamanhoHeap] = alimento;
-        siftUp(heap->estoquePerecivel, heap->tamanhoHeap);
-        heap->tamanhoHeap++;
+    if(alimento.tipo_alimento == PERECIVEL && alimento.simbolo_alimento == heap->alimento){
+        heap->estoque_perecivel[heap->tamanho_heap] = alimento;
+        siftUp(heap->estoque_perecivel, heap->tamanho_heap);
+        heap->tamanho_heap++;
         return true;
     }
     return false; 
@@ -42,19 +42,19 @@ bool inserirHeap(HeapEstoque *heap, const Alimento alimento){
 
 bool removerHeap(HeapEstoque *heap, Alimento* alimento){
     
-    if(heap->tamanhoHeap <= 0){
+    if(heap->tamanho_heap <= 0){
         return false;
     }
-    *alimento = heap->estoquePerecivel[0];
-    heap->estoquePerecivel[0] = heap->estoquePerecivel[heap->tamanhoHeap - 1];
-    heap->tamanhoHeap--;
-    heapify(heap->estoquePerecivel, heap->tamanhoHeap, 0);
+    *alimento = heap->estoque_perecivel[0];
+    heap->estoque_perecivel[0] = heap->estoque_perecivel[heap->tamanho_heap - 1];
+    heap->tamanho_heap--;
+    heapify(heap->estoque_perecivel, heap->tamanho_heap, 0);
     return true;
 }
 
 bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, Alimento *alimento){
-    if(heap->estoquePerecivel[0].validade == turno_atual){
-        while(heap->estoquePerecivel[0].validade == turno_atual){
+    if(heap->estoque_perecivel[0].validade == turno_atual){
+        while(heap->estoque_perecivel[0].validade == turno_atual){
             removerHeap(heap, alimento);
         }
         return true;

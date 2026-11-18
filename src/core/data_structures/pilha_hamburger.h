@@ -27,7 +27,7 @@ typedef struct {
 void inicializaPilha(PilhaHamburger *p);
 
 /**
- * @brief 
+ * @brief Verifica se a pilha não contém ingredientes.
  * @param[in] p ponteiro para o topo da pilha 
  * @return true a pilha está vazia
  * @return false a pilha não está vazia
@@ -48,12 +48,12 @@ bool pushPilha(PilhaHamburger *p, char ingrediente);
 /**
  * @brief  Retira um ingrediente do topo da pilha
  * @param [in, out] p ponteiro para o topo da pilha
- * @param [in, out] ingredienteRemovido ponteiro para um char, ao final da execução ele terá o ingrediente do char removido na função 
+ * @param [in, out] ingrediente_removido ponteiro que receberá o ingrediente removido
  * @return true a operação foi realizada com sucesso 
  * @return false não foi possivel realizar a operação
  */
 
-bool popPilha(PilhaHamburger *p, char *ingredienteRemovido);
+bool popPilha(PilhaHamburger *p, char *ingrediente_removido);
 
 /**
  * @brief Descobre qual é o elemento do topo da pilha

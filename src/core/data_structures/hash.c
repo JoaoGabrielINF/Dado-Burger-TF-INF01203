@@ -4,11 +4,11 @@
 
 void inserir(TabelaHash *t, int chave, int valor) {
     int i = chave % t->m;
-    NoHash *No = (NoHash*) malloc(sizeof(NoHash));
-    No->chave = chave;
-    No->valor = valor;
-    No->prox  = t->tabela[i];   /* insere NoHash início */
-    t->tabela[i] = No;
+    NoHash *novo_no = (NoHash*) malloc(sizeof(NoHash));
+    novo_no->chave = chave;
+    novo_no->valor = valor;
+    novo_no->prox  = t->tabela[i];   /* insere NoHash início */
+    t->tabela[i] = novo_no;
     t->n++;
 }
 

@@ -20,14 +20,14 @@ bool pushPilha(PilhaHamburger *p, char ingrediente) {
     return true;
 }
 
-bool popPilha(PilhaHamburger *p, char* ingredienteRemovido) {
+bool popPilha(PilhaHamburger *p, char *ingrediente_removido) {
     NodoPilha *removido;
 
     if (estaVazia(p)) // underflow
         return false;
 
     removido = p->topo;
-    *ingredienteRemovido = removido->ingrediente;
+    *ingrediente_removido = removido->ingrediente;
     p->topo = removido->prox;
     free(removido);
     return true;

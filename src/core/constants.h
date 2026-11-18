@@ -21,19 +21,35 @@
 /** Altura total da janela em pixels incluindo a HUD */
 #define JANELA_ALTURA (MAPA_LINHAS * TILE_SIZE + HUD_ALTURA)
 
-#define TAMANHO_FONTE_BOTAO   (JANELA_ALTURA * 0.05f)   /* ~36 */
-#define ESPACO_FONTE 2.0f
+/** Tamanho da fonte dos botões em relação à altura da janela */
+#define TAMANHO_FONTE_BOTAO   (JANELA_ALTURA * 0.05f)
+/** Tamanho da fonte dos títulos em relação à fonte dos botões */
+#define TAMANHO_FONTE_TITULO  (TAMANHO_FONTE_BOTAO * 1.2f)
+/** Tamanho da fonte do texto em relação à altura da janela */
+#define TAMANHO_FONTE_TEXTO   (JANELA_ALTURA * 0.035f)
+/** Espaçamento vertical entre linhas como múltiplo do tamanho da fonte */
+#define ESPACAMENTO_LINHA     1.5f
+/** Espaçamento entre caracteres do texto */
+#define ESPACO_FONTE          2.0f
 
+/** Largura dos botões do menu inicial */
 #define LARGURA_BOTAO_INICIO (JANELA_LARGURA * (380.0f / 1920.0f))
+/** Altura dos botões do menu inicial */
 #define ALTURA_BOTAO_INICIO (JANELA_ALTURA * (85.0f / 1080.0f))
-#define X_BOTAO_INICIO (JANELA_LARGURA * (1380.0f / 1920.0f))  // Centralizado na área livre da direita
-#define Y_BOTAO_INICIO (JANELA_ALTURA / 2 - ALTURA_BOTAO_INICIO / 2)  // Altura inicial (abaixo das lâmpadas da coifa)
+/** Coordenada horizontal dos botões do menu inicial */
+#define X_BOTAO_INICIO (JANELA_LARGURA * (1380.0f / 1920.0f))
+/** Coordenada vertical do botão central do menu inicial */
+#define Y_BOTAO_INICIO (JANELA_ALTURA / 2 - ALTURA_BOTAO_INICIO / 2)
+/** Espaçamento vertical entre os botões do menu inicial */
 #define ESPACAMENTO_BOTAO_INICIO (JANELA_ALTURA * (30.0f / 1080.0f))
 
-
+/** Altura do painel de exibição no menu inicial */
 #define ALTURA_DISPLAY_INICIO 340.0f
+/** Largura do painel de exibição no menu inicial */
 #define LARGURA_DISPLAY_INICIO 350.0f
+/** Coordenada vertical do painel de exibição no menu inicial */
 #define Y_DISPLAY_INICIO (Y_BOTAO_INICIO + ALTURA_BOTAO_INICIO / 2 - ALTURA_DISPLAY_INICIO / 2 )
+/** Coordenada horizontal do painel de exibição no menu inicial */
 #define X_DISPLAY_INICIO (X_BOTAO_INICIO + LARGURA_BOTAO_INICIO / 2 - LARGURA_DISPLAY_INICIO / 2)
 
 /** Paciencia maxima medida em turnos dos clientes no modo fácil */
@@ -45,7 +61,10 @@
 /** Paciencia maxima medida em turnos dos clientes no modo difícil */
 #define PACIENCIA_MAXIMA_DIFICIL 12
 
-/** Validade dos char*s perecíveis medida em turnos */
+/** Numero de equipamentos na cozinha */
+#define NUMERO_EQUIPAMENTOS 3
+
+/** Validade inicial dos alimentos perecíveis, medida em turnos */
 #define TURNOS_PERECIVEIS 9
 
 /** Simbolo do pão em pedidos.txt */
@@ -93,8 +112,19 @@
 /** Simbolo da tábua em tela_jogo_cozinha.txt */
 #define TABUA_SIMBOLO 'u'
 
-/** Definição de tempos */
-#define TURNOS_COZIMENTO 3 
+/** Simbolo do jogador nos .txt */
+#define JOGADOR_SIMBOLO 'j'
+
+/** Simbolo do cliente em tela_jogo_recepcao.txt */
+#define CLIENTE_SIMBOLO 'l'
+
+/** Simbolo do tile bloqueado nos .txt */
+#define BLOQUEADO_SIMBOLO '#'
+
+/** Duração do cozimento de um alimento, medida em turnos */
+#define TURNOS_COZIMENTO 3
+
+
 
  typedef enum {
     ILIMITADO = 0, /**< Alimento que não acaba */
@@ -118,10 +148,14 @@ typedef enum {
 
 typedef enum {
     PARADO = 0, /**< Animação da entidade parada */
-    ANDANDO_DIREITA = 1, /**< Animação da entidade andando para a direita */
-    ANDANDO_ESQUERDA = 2, /**< Animação da entidade andando para a esquerda */
-    ANDANDO_CIMA = 3, /**< Animação da entidade andando para a esquerda */
-    ANDANDO_BAIXO = 4 /**< Animação da entidade andando para baixo */
+    DIREITA = 1, /**< Animação da entidade andando para a direita */
+    ESQUERDA = 2, /**< Animação da entidade andando para a esquerda */
+    CIMA = 3, /**< Animação da entidade andando para a esquerda */
+    BAIXO = 4, /**< Animação da entidade andando para baixo */
+    CIMA_DIREITA = 5,
+    CIMA_ESQUERDA = 6,
+    BAIXO_DIREITA = 7,
+    BAIXO_ESQUERDA = 8
 } TipoAnimacao;
 
 /**

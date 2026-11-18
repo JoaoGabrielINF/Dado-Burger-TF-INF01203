@@ -13,12 +13,34 @@
 
 typedef struct {
     Vector2 posicao; /**< Posição atual do jogador em pixel */
-    HeapEstoque heapEstoque; /**< Estoque de perecíveis armazenado em Heap */
+    HeapEstoque heap_estoque; /**< Estoque de perecíveis armazenado em heap */
     float velocidade; /**< Velocidade do jogador */
     TileAtual tile_atual; /**< Tile ocupado pelo jogador */
     Animacao animacao; /**< Animacao do jogador */
-    TileAtual tileInicial; /**< Tile que o jogador vai spawnar */
+    TileAtual tile_inicial; /**< Tile que o jogador vai spawnar */
+    Rectangle hitbox; /**< Hitbox do jogador utilizada para teste de colisões */
+    bool andando; /**< Indica se o jogador está se movendo */
 } Jogador;
+
+
+/**
+ * @brief Estado completo dos equipamentos de cozinha disponíveis para o uso do jogador
+ */
+
+typedef struct {
+    MateriaisCozinha materiais; /**< Tipo do equipamento */
+    Vector2 posicao_pixels; /**< Posição do equipamento em pixels */
+    TileAtual tile_atual; /**< Posição do equipamento no mapa */
+    bool em_uso; /**< Indica se o equipamento está em uso */
+    float tempo_preparo_restante; /**< Tempo restante no preparo de um alimento */
+} EquipamentoCozinha;
+
+/**
+ * @brief Matriz de tiles do mapa
+ */
+typedef struct {
+    char tiles[MAPA_LINHAS][MAPA_COLUNAS]; /**< Matriz de caracteres do mapa */
+} Mapa;
 
  /**
  * @brief Estado completo do jogo durante a partida
@@ -27,27 +49,13 @@ typedef struct {
 typedef struct {
     DificuldadeJogo dificuldade; /**< Dificuldade do jogo selecionada */
     Jogador jogador; /**< Personagem do jogador */
-    int turnoAtual; /**< Turno atual em que o jogo se encontra */
-    FilaClientes filaClientes; /**< Fila de clientes */
+    Cliente cliente; /**< Cliente atendido atualmente */
+    EquipamentoCozinha equipamentos[NUMERO_EQUIPAMENTOS - 1]; /**< Equipamentos da cozinha */
+    int turno_atual; /**< Turno atual em que o jogo se encontra */
+    FilaClientes fila_clientes; /**< Fila de clientes */
     int pontuacao; /**< Pontuacao obtida pelo jogador */
-    TelaAtual telaAtual; /**< Tela atual que o jogo está apresentando */
-    bool jogando; /**<B ooleano para saber se o usuario está em uma partida ou não */
-    float tempo;
+    TelaAtual tela_atual; /**< Tela atual que o jogo está apresentando */
+    bool jogando; /**< Indica se uma partida está em andamento */
+    float tempo; /**< Tempo decorrido na partida */
+    Mapa mapa; /**< Mapa da partida */
 } Jogo;
-
-/**
- * @brief Estado completo dos equipamentos de cozinha disponíveis para o uso do jogador
- */
-
-typedef struct {
-    MateriaisCozinha equipamentos; /**< ENUM que representa fogão, bancada e tábua */
-    bool emUso; /**< Booleano para saber se o equipamento está em uso */
-    float tempoPreparoRestante; /**< Tempo restante no preparo de algum alimento */
-} EquipamentoCozinha;
-
-/**
- * @brief Matriz de tiles do mapa
- */
-typedef struct {
-    char tiles[MAPA_LINHAS] [MAPA_COLUNAS]; /**< Matriz de tiles */
-} Mapa;

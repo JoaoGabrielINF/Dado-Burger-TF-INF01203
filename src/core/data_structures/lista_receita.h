@@ -41,7 +41,7 @@ void imprimirLista(const ListaReceita *lista);
  * @return false ingrediente não foi encontrado na lista
  */
 
-bool buscarLista(const ListaReceita *lista, char ingrediete);
+bool buscarLista(const ListaReceita *lista, char ingrediente);
 
 /**
  * @brief Insere um ingrediente no início da lista 

@@ -17,7 +17,7 @@
     int ultimo; /**<Ultimo frame*/
     int atual; /**<Frame atual*/
     float velocidade; /**<Velocidade de mudança do frame */
-    float duracaoRestante; /**<Duração restante do frame atual */
+    float duracao_restante; /**< Duração restante do frame atual */
     TipoAnimacao tipo; /** <Ação e direção atual da animação */
     int passo; /**<Numero de frames que são pulados por iteração */
 } Animacao;
