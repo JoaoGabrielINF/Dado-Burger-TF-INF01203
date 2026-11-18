@@ -135,7 +135,7 @@ void desenhaJogador(Jogador *jogador)
         TILE_SIZE * 2.5,
         TILE_SIZE * 2.5};
 
-    jogador->hitbox = (Rectangle){retangulo_jogador.x, retangulo_jogador.y, retangulo_jogador.width / 1.8, retangulo_jogador.height * 2/3};
+    jogador->hitbox = (Rectangle){retangulo_jogador.x, retangulo_jogador.y, retangulo_jogador.width / 2.0, retangulo_jogador.height * 4/5};
     DrawRectangleRec(jogador->hitbox, RED);
 
     Vector2 centro = {TILE_SIZE / 2, TILE_SIZE / 2};
