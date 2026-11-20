@@ -3,6 +3,7 @@
 #include "presentation/render.h"
 #include "io/mapa_io.h"
 #include "presentation/mapa.h"
+#include "gameplay/jogador.h"
 int main(int argc, char **argv)
 {
     Jogo meu_jogo = {0};
@@ -42,6 +43,10 @@ int main(int argc, char **argv)
         SetMouseOffset((int)-off_x, (int)-off_y);
         SetMouseScale(1.0f / escala, 1.0f / escala);
 
+
+        /* movimentação do jogador (com colisão contra o mapa) nas telas jogáveis */
+        if (meu_jogo.tela_atual == RECEPCAO || meu_jogo.tela_atual == COZINHA)
+            atualiza_jogador(&meu_jogo);
 
         /* 1. desenha tudo na textura lógica */
         BeginTextureMode(alvo);

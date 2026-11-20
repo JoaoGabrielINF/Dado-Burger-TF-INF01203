@@ -1,4 +1,5 @@
 #include "render.h"
+#include "../gameplay/jogador.h"
 
 Texture2D fundo;
 static Font fonte_jogo;
@@ -135,14 +136,26 @@ void desenhaJogador(Jogador *jogador)
         TILE_SIZE * 2.5,
         TILE_SIZE * 2.5};
 
-    jogador->hitbox = (Rectangle){retangulo_jogador.x, retangulo_jogador.y, retangulo_jogador.width / 2.0, retangulo_jogador.height * 4/5};
-    DrawRectangleRec(jogador->hitbox, RED);
+    atualiza_hitbox_jogador(jogador); /* hitbox encaixa no desenho do personagem */
 
     Vector2 centro = {TILE_SIZE / 2, TILE_SIZE / 2};
 
     determinaDirecao(jogador);
     int comando = jogador->animacao.tipo;
     bool parado = !jogador->andando;
+    /* Frames do sprite sheet (principal.png, 72x72, 16 colunas x 2 linhas):
+       Direção        | Parado | Andando
+       CIMA           |   0    |  1-3
+       BAIXO          |   4    |  5-7
+       DIREITA        |   8    |  9-11
+       ESQUERDA       |  12    | 13-15
+       CIMA_DIREITA   |   8    | 17-19  (o frame 20 do sheet e um perfil p/ esquerda)
+       CIMA_ESQUERDA  |  22    | 21-23
+       BAIXO_DIREITA  |  24    | 25-27
+       BAIXO_ESQUERDA |  28    | 29-31
+       Os frames de "parado" foram conferidos um a um na imagem: antes, as
+       diagonais e a esquerda usavam frames de passada como parado e o
+       personagem parecia travar no meio do passo ao soltar a tecla. */
     switch (comando)
     {
     case DIREITA:
@@ -157,8 +170,8 @@ void desenhaJogador(Jogador *jogador)
 
     case ESQUERDA:
     if(parado){
-            jogador->animacao.primeiro = 13;
-            jogador->animacao.ultimo = 13;
+            jogador->animacao.primeiro = 12;
+            jogador->animacao.ultimo = 12;
         } else{
             jogador->animacao.primeiro = 13;
             jogador->animacao.ultimo = 15;
@@ -167,8 +180,8 @@ void desenhaJogador(Jogador *jogador)
 
     case CIMA:
     if(parado){
-            jogador->animacao.primeiro = 1;
-            jogador->animacao.ultimo = 1;
+            jogador->animacao.primeiro = 0;
+            jogador->animacao.ultimo = 0;
         } else{
             jogador->animacao.primeiro = 1;
             jogador->animacao.ultimo = 3;
@@ -178,8 +191,8 @@ void desenhaJogador(Jogador *jogador)
 
     case BAIXO:
     if(parado){
-            jogador->animacao.primeiro = 5;
-            jogador->animacao.ultimo = 5;
+            jogador->animacao.primeiro = 4;
+            jogador->animacao.ultimo = 4;
         } else{
             jogador->animacao.primeiro = 5;
             jogador->animacao.ultimo = 7;
@@ -189,8 +202,10 @@ void desenhaJogador(Jogador *jogador)
 
     case CIMA_DIREITA:
     if(parado){
-            jogador->animacao.primeiro = 20;
-            jogador->animacao.ultimo = 20;
+            /* o frame 20 original do sheet e um perfil olhando p/ ESQUERDA;
+               usa o parado de perfil direito (frame 8) no lugar */
+            jogador->animacao.primeiro = 8;
+            jogador->animacao.ultimo = 8;
         } else{
             jogador->animacao.primeiro = 17;
             jogador->animacao.ultimo = 19;
@@ -200,8 +215,8 @@ void desenhaJogador(Jogador *jogador)
 
     case CIMA_ESQUERDA:
     if(parado){
-            jogador->animacao.primeiro = 21;
-            jogador->animacao.ultimo = 21;
+            jogador->animacao.primeiro = 22;
+            jogador->animacao.ultimo = 22;
         } else{
             jogador->animacao.primeiro = 21;
             jogador->animacao.ultimo = 23;
@@ -211,8 +226,8 @@ void desenhaJogador(Jogador *jogador)
 
     case BAIXO_DIREITA:
         if(parado){
-            jogador->animacao.primeiro = 25;
-            jogador->animacao.ultimo = 25;
+            jogador->animacao.primeiro = 24;
+            jogador->animacao.ultimo = 24;
         } else{
             jogador->animacao.primeiro = 25;
             jogador->animacao.ultimo = 27;
@@ -222,8 +237,8 @@ void desenhaJogador(Jogador *jogador)
 
     case BAIXO_ESQUERDA:
     if(parado){
-            jogador->animacao.primeiro = 29;
-            jogador->animacao.ultimo = 29;
+            jogador->animacao.primeiro = 28;
+            jogador->animacao.ultimo = 28;
         } else{
             jogador->animacao.primeiro = 29;
             jogador->animacao.ultimo = 31;

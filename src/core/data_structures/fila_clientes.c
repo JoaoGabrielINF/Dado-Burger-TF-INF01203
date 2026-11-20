@@ -1,5 +1,6 @@
 #include "fila_clientes.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void inicializaFila(FilaClientes *f) {
     f->frente = NULL;
@@ -30,7 +31,7 @@ bool enqueueFila(FilaClientes *f, const Cliente *cliente) {
 bool dequeueFila(FilaClientes *f, Cliente *cliente) {
     NodoFila *removido;
 
-    if (estaVazia(f)) // underflow
+    if (estaVaziaFila(f)) // underflow
         return false;
 
     removido = f->frente;
@@ -45,7 +46,7 @@ bool dequeueFila(FilaClientes *f, Cliente *cliente) {
 }
 
 bool frenteFila(const FilaClientes *f, Cliente *cliente) {
-    if (estaVazia(f))
+    if (estaVaziaFila(f))
         return false;
 
     *cliente = f->frente->cliente; // copia o Cliente do primeiro NodoFila sem removê-lo

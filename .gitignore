@@ -59,3 +59,7 @@ dkms.conf
 
 # Executáveis gerados pela compilação
 main.exe
+
+# Toolchain portatil local (raylib + w64devkit) e objetos de build
+tools/
+build/

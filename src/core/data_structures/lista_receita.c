@@ -1,5 +1,6 @@
 #include "lista_receita.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void inicializarLista(ListaReceita *lista) {
     lista->ini = NULL;

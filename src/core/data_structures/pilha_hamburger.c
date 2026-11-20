@@ -1,5 +1,6 @@
 #include "pilha_hamburger.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void inicializaPilha(PilhaHamburger *p) {
     p->topo = NULL;
@@ -23,7 +24,7 @@ bool pushPilha(PilhaHamburger *p, char ingrediente) {
 bool popPilha(PilhaHamburger *p, char *ingrediente_removido) {
     NodoPilha *removido;
 
-    if (estaVazia(p)) // underflow
+    if (estaVaziaPilha(p)) // underflow
         return false;
 
     removido = p->topo;
@@ -34,7 +35,7 @@ bool popPilha(PilhaHamburger *p, char *ingrediente_removido) {
 }
 
 bool topoPilha(const PilhaHamburger *p, char* ingrediente) {
-    if (estaVazia(p))
+    if (estaVaziaPilha(p))
         return false;
 
     *ingrediente = p->topo->ingrediente;

@@ -2,7 +2,7 @@
 /** Tamanho da tabela hash usada pelo projeto */
 #define TAM_HASH 51
 #include <stdbool.h>
-#include "cliente.h"
+#include "../cliente.h"
 
 // Pelo mesmo motivo didático, será usado o hash por divisão, garantindo uma chance um pouco maior que as outras funções de ocorrência de colisões.
 // Adotaremos o tratamento de colisões com o encadeamento separado (chaining)

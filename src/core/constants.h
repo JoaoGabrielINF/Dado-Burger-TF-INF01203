@@ -121,6 +121,35 @@
 /** Simbolo do tile bloqueado nos .txt */
 #define BLOQUEADO_SIMBOLO '#'
 
+/** Simbolo da mesa nos .txt: colide apenas com a faixa superior do tile
+ *  (a tampa da mesa), permitindo o jogador sobrepor visualmente a frente dela */
+#define MESA_SIMBOLO 'M'
+
+/** Simbolo da mesa lateral nos .txt (balcao vertical): colide apenas com a
+ *  faixa esquerda do tile, de largura ALTURA_COLISAO_MESA */
+#define MESA_LATERAL_SIMBOLO 'V'
+
+/** Simbolo da parede baixa vista de cima nos .txt: colide apenas com uma
+ *  faixa fina no RODAPE do tile (usado onde a parede desenhada comeca um
+ *  pouco acima da borda do tile de baixo) */
+#define PAREDE_RODAPE_SIMBOLO 'N'
+
+/** Altura, em pixels, da faixa de colisao no rodape do tile (simbolo N) */
+#define ALTURA_COLISAO_RODAPE 8
+
+/** Altura, em pixels, da faixa de colisao de uma mesa dentro do tile */
+#define ALTURA_COLISAO_MESA (TILE_SIZE / 2)
+
+/** Velocidade de deslocamento do jogador, em pixels por segundo */
+#define VELOCIDADE_JOGADOR 180.0f
+
+/** Limites do desenho do personagem dentro do frame de 72x72 do sprite sheet
+ *  (bounding box medida em assets/imagens/principal.png) */
+#define PERSONAGEM_X0_NO_FRAME 24.0f
+#define PERSONAGEM_X1_NO_FRAME 50.0f
+#define PERSONAGEM_Y0_NO_FRAME 15.0f
+#define PERSONAGEM_Y1_NO_FRAME 71.0f
+
 /** Duração do cozimento de um alimento, medida em turnos */
 #define TURNOS_COZIMENTO 3
 
