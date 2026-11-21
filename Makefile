@@ -38,7 +38,7 @@ RAYLIB_PATH ?= $(if $(wildcard tools/raylib/include/raylib.h),tools/raylib,$(if 
 
 # ----------------------------------- Flags ----------------------------------
 CFLAGS  := -Wall -std=c99 -O1
-INCLUDES := -I$(RAYLIB_PATH)/include
+INCLUDES := -I$(RAYLIB_PATH)/include -Isrc/core
 LDLIBS   := -L$(RAYLIB_PATH)/lib -lraylib -lopengl32 -lgdi32 -lwinmm
 
 # --------------------------------- Fontes -----------------------------------
