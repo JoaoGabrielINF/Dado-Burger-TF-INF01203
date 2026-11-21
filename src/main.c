@@ -4,14 +4,32 @@
 #include "io/mapa_io.h"
 #include "presentation/mapa.h"
 #include "gameplay/jogador.h"
+
+static void carrega_estruturas_da_tela(Jogo *jogo)
+{
+    switch (jogo->tela_atual) {
+    case RECEPCAO:
+        carrega_estruturas_mapa(jogo->mapa[MAPA_RECEPCAO].tiles, jogo);
+        break;
+    case COZINHA:
+        carrega_estruturas_mapa(jogo->mapa[MAPA_COZINHA].tiles, jogo);
+        break;
+    default:
+        break;
+    }
+}
+
 int main(int argc, char **argv)
 {
     Jogo meu_jogo = {0};
-    if(!carregar_mapa("dados/tela_jogo_saguao.txt", meu_jogo.mapa.tiles)){
+    if(!carregar_mapa("dados/tela_jogo_saguao.txt", meu_jogo.mapa[MAPA_RECEPCAO].tiles)){
+        return 1;
+    }
+    if(!carregar_mapa("dados/tela_jogo_cozinha.txt", meu_jogo.mapa[MAPA_COZINHA].tiles)){
         return 1;
     }
 
-    carrega_estruturas_mapa(meu_jogo.mapa.tiles, &meu_jogo);
+    carrega_estruturas_mapa(meu_jogo.mapa[MAPA_RECEPCAO].tiles, &meu_jogo);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(JANELA_LARGURA, JANELA_ALTURA, "Dado Burger");
@@ -45,14 +63,18 @@ int main(int argc, char **argv)
 
 
         /* movimentação do jogador (com colisão contra o mapa) nas telas jogáveis */
-        if (meu_jogo.tela_atual == RECEPCAO || meu_jogo.tela_atual == COZINHA)
+        if (meu_jogo.tela_atual == RECEPCAO || meu_jogo.tela_atual == COZINHA) {
             atualiza_jogador(&meu_jogo);
+        }
 
         /* 1. desenha tudo na textura lógica */
+        TelaAtual tela_anterior = meu_jogo.tela_atual;
         BeginTextureMode(alvo);
             ClearBackground(RAYWHITE);
             desenhaJogo(&meu_jogo);
         EndTextureMode();
+        if (meu_jogo.tela_atual != tela_anterior)
+            carrega_estruturas_da_tela(&meu_jogo);
 
         /* 2. apresenta escalada, mantendo proporção */
         BeginDrawing();

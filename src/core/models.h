@@ -31,6 +31,8 @@ typedef struct {
     MateriaisCozinha materiais; /**< Tipo do equipamento */
     Vector2 posicao_pixels; /**< Posição do equipamento em pixels */
     TileAtual tile_atual; /**< Posição do equipamento no mapa */
+    Rectangle hitbox;
+    
     bool em_uso; /**< Indica se o equipamento está em uso */
     float tempo_preparo_restante; /**< Tempo restante no preparo de um alimento */
 } EquipamentoCozinha;
@@ -57,5 +59,5 @@ typedef struct {
     TelaAtual tela_atual; /**< Tela atual que o jogo está apresentando */
     bool jogando; /**< Indica se uma partida está em andamento */
     float tempo; /**< Tempo decorrido na partida */
-    Mapa mapa; /**< Mapa da partida */
+    Mapa mapa[NUMERO_MAPAS]; /**< Mapas da partida: recepcao e cozinha */
 } Jogo;

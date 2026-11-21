@@ -1,6 +1,6 @@
 #pragma once
 /** Tamanho da tabela hash usada pelo projeto */
-#define TAM_HASH 51
+#define TAMANHO_HASH 51
 #include <stdbool.h>
 #include "../cliente.h"
 

@@ -9,6 +9,13 @@
 /** Tamanho de cada tile em pixels */
 #define TILE_SIZE 40
 
+/** Numero de mapas do jogo */
+#define NUMERO_MAPAS 2
+/** Indice do mapa da recepcao no vetor de mapas */
+#define MAPA_RECEPCAO 0
+/** Indice do mapa da cozinha no vetor de mapas */
+#define MAPA_COZINHA 1
+
 /** Numero de clientes por partida */
 #define CLIENTES_POR_PARTIDA 7
 

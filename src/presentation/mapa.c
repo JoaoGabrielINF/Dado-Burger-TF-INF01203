@@ -1,6 +1,6 @@
 #include "mapa.h"
 
-void carrega_estruturas_mapa(char mapa[][MAPA_COLUNAS], Jogo *jogo){
+void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo){
 
     for(int linha = 0; linha < MAPA_LINHAS; linha++) {
 

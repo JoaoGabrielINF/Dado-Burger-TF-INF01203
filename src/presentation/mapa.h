@@ -7,4 +7,4 @@
  * @param[in] mapa Matriz de caracteres do mapa
  * @param[in,out] jogo Estado do jogo que receberá as posições das entidades
  */
-void carrega_estruturas_mapa(char mapa[][MAPA_COLUNAS], Jogo *jogo);
+void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo);

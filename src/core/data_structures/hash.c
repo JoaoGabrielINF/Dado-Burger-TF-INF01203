@@ -2,7 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void inserir(TabelaHash *t, int chave, int valor) {
+void inicializarHash(TabelaHash *t){
+    t->m =  TAMANHO_HASH;
+    t->n = 0;
+    t->tabela = malloc(t->m * sizeof(NoHash*));
+    for(int i = 0; i < t->m; i++){
+        t->tabela[i] = NULL;
+    }
+    
+}
+
+void inserirHash(TabelaHash *t, int chave, int valor) {
     int i = chave % t->m;
     NoHash *novo_no = (NoHash*) malloc(sizeof(NoHash));
     novo_no->chave = chave;
@@ -12,7 +22,7 @@ void inserir(TabelaHash *t, int chave, int valor) {
     t->n++;
 }
 
-int buscar(TabelaHash *t, int chave) {
+int buscarHash(TabelaHash *t, int chave) {
     int i = chave % t->m;
     NoHash *p = t->tabela[i];
     while (p != NULL) {
@@ -22,7 +32,7 @@ int buscar(TabelaHash *t, int chave) {
     return false;   /* não encontrado */
 }
 
-bool remover(TabelaHash *t, int chave) {
+bool removerHash(TabelaHash *t, int chave) {
     int i = chave % t->m;
     NoHash *p = t->tabela[i];
     NoHash *ant = NULL;

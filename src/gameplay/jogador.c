@@ -38,7 +38,7 @@ static Rectangle regiao_solida_tile(char tile, int linha, int coluna)
  * @return true se o retângulo colide com o mapa
  * @return false caso o retângulo esteja inteiramente sobre área livre
  */
-static bool colide_mapa(const Jogo *jogo, Rectangle r)
+static bool colide_mapa(const Mapa *mapa, Rectangle r)
 {
     if (r.x < 0.0f || r.y < 0.0f ||
         r.x + r.width > MAPA_COLUNAS * TILE_SIZE ||
@@ -46,13 +46,13 @@ static bool colide_mapa(const Jogo *jogo, Rectangle r)
         return true; /* fora da matriz conta como parede */
 
     int coluna0 = (int)(r.x / TILE_SIZE);
-    int coluna1 = (int)((r.x + r.width) / TILE_SIZE);
+    int coluna1 = (int)ceilf((r.x + r.width) / TILE_SIZE) - 1;
     int linha0 = (int)(r.y / TILE_SIZE);
-    int linha1 = (int)((r.y + r.height) / TILE_SIZE);
+    int linha1 = (int)ceilf((r.y + r.height) / TILE_SIZE) - 1;
 
     for (int linha = linha0; linha <= linha1; linha++) {
         for (int coluna = coluna0; coluna <= coluna1; coluna++) {
-            Rectangle solido = regiao_solida_tile(jogo->mapa.tiles[linha][coluna], linha, coluna);
+            Rectangle solido = regiao_solida_tile(mapa->tiles[linha][coluna], linha, coluna);
             if (solido.width > 0.0f && CheckCollisionRecs(r, solido))
                 return true;
         }
@@ -74,12 +74,24 @@ void atualiza_hitbox_jogador(Jogador *jogador)
         sprite_x + PERSONAGEM_X0_NO_FRAME * escala,
         sprite_y + PERSONAGEM_Y0_NO_FRAME * escala,
         (PERSONAGEM_X1_NO_FRAME - PERSONAGEM_X0_NO_FRAME + 1.0f) * escala,
-        (PERSONAGEM_Y1_NO_FRAME - PERSONAGEM_Y0_NO_FRAME + 1.0f) * escala};
+        (PERSONAGEM_Y1_NO_FRAME - PERSONAGEM_Y0_NO_FRAME + 1.0f) * escala - TILE_SIZE / 2};
 }
 
 void atualiza_jogador(Jogo *jogo)
 {
     Jogador *jogador = &jogo->jogador;
+    const Mapa *mapa;
+
+    switch (jogo->tela_atual) {
+    case RECEPCAO:
+        mapa = &jogo->mapa[MAPA_RECEPCAO];
+        break;
+    case COZINHA:
+        mapa = &jogo->mapa[MAPA_COZINHA];
+        break;
+    default:
+        return;
+    }
 
     float dx = 0.0f;
     float dy = 0.0f;
@@ -105,12 +117,12 @@ void atualiza_jogador(Jogo *jogo)
        continua deslizando no outro */
     Rectangle teste = jogador->hitbox;
     teste.x += dx * passo;
-    if (!colide_mapa(jogo, teste))
+    if (!colide_mapa(mapa, teste))
         jogador->posicao.x += dx * passo;
 
     teste = jogador->hitbox;
     teste.y += dy * passo;
-    if (!colide_mapa(jogo, teste))
+    if (!colide_mapa(mapa, teste))
         jogador->posicao.y += dy * passo;
 
     /* o tile atual passa a ser o tile sobre o centro da hitbox */

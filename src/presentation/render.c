@@ -6,13 +6,21 @@ static Font fonte_jogo;
 Texture2D recepcao;
 Texture2D cozinha;
 Texture2D jogador_frames;
+Texture2D parede_baixo;
+Texture2D bancada_normal;
+Texture2D bancada_tabua;
+Texture2D fogao;
 void carregaAssets(void)
 {
     jogador_frames = LoadTexture("assets/imagens/principal.png");
     recepcao = LoadTexture("assets/imagens/mapas/mapa_1.png");
     cozinha = LoadTexture("assets/imagens/mapas/mapa_2.png");
     fundo = LoadTexture("assets/imagens/Imagem_Fundo_Dado_Burger.png");
+    parede_baixo = LoadTexture("assets/imagens/mapas/parede_baixo_mapa_2.png");
     fonte_jogo = GetFontDefault();
+    bancada_normal = LoadTexture("assets/imagens/cozinha/bancada.png");
+    fogao = LoadTexture("assets/imagens/cozinha/fogao.png");
+    bancada_tabua = LoadTexture("assets/imagens/cozinha/bancada_tabua.png");
 }
 
 bool coloreSeColide(Rectangle rec, Vector2 pos_mouse)
@@ -251,6 +259,10 @@ void desenhaJogador(Jogador *jogador)
     }
     DrawTexturePro(jogador_frames, tamanho_frames(&jogador->animacao, 72, 72, 16),
                    retangulo_jogador, centro, 0.0f, WHITE);
+}
+
+void desenhaEquipamentos(const Jogo * jogo){
+    
 }
 
 void desenhaJogo(Jogo *jogo)
@@ -572,13 +584,24 @@ void desenhaJogo(Jogo *jogo)
         DrawTexturePro(recepcao, origem, destino, (Vector2){0, 0}, 0.0f, WHITE);
         desenhaJogador(&jogo->jogador);
         atualiza_anim_entidades(jogo);
+        float distancia_para_cozinha = (MAPA_COLUNAS - 2) * TILE_SIZE;
+        if(jogo->jogador.posicao.x >= distancia_para_cozinha){
+            jogo->tela_atual = COZINHA;
+        }
 
         break;
 
     case COZINHA:
-        Rectangle origem_2 = {0, 0, (float)recepcao.width, (float)recepcao.height};
+        Rectangle origem_2 = {0, 0, (float)cozinha.width, (float)cozinha.height};
         Rectangle destino_2 = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(cozinha, origem_2, destino_2, (Vector2){0, 0}, 0.0f, WHITE);
+        desenhaEquipamentos(jogo);
+        desenhaJogador(&jogo->jogador);
+        Rectangle origem_parede_baixo = {
+            0, 0, (float)parede_baixo.width, (float)cozinha.height};
+        DrawTexturePro(parede_baixo, origem_parede_baixo, destino_2,
+                       (Vector2){0, 0}, 0.0f, WHITE);
+        atualiza_anim_entidades(jogo);
     default:
         break;
     }
@@ -586,5 +609,9 @@ void desenhaJogo(Jogo *jogo)
 
 void descarregaAssets(void)
 {
+    UnloadTexture(fogao);
+    UnloadTexture(bancada_normal);
+    UnloadTexture(bancada_tabua);
     UnloadTexture(fundo);
+    UnloadTexture(parede_baixo);
 }

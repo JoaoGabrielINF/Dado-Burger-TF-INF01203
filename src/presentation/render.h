@@ -39,6 +39,12 @@ void determinaDirecao(Jogador *jogador);
 void desenhaJogador(Jogador *jogador);
 
 /**
+ * @brief Funcao que desenha os equipamentos utilizados na cozinha (fogao, tabua e bancada)
+ * @param equipamentos lista de equipamentos
+ */
+void desenhaEquipamentos(const Jogo* jogo);
+
+/**
  * @brief Desenha os elementos da tela atual do jogo.
  * @param[in,out] jogo Estado do jogo a desenhar
  */
