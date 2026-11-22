@@ -1,70 +1,88 @@
-#ifndef LISTAENC_H
-#define LISTAENC_H
-#include <cliente.h>
+#ifndef LISTA_CONTIGUA_HISTORICO_H
+#define LISTA_CONTIGUA_HISTORICO_H
 
-typedef struct str_Nodo Nodo;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct str_Nodo {
-    Nodo *prox;
-    Pedido dado;
-};
+#define TAM 21 // tamanho do nome (com 1 reservado pro \0)
+#define CAP_INICIAL 4 // capacidade inicial da lista (o valor é meio arbitrário, mas é potência de 2 pq vai dobrando dps conforme acaba o espaço)
+
 
 typedef struct {
-    Nodo *ini;
-} ListaEnc;
+    int cod;
+    char nome[TAM];
+    int pontuacao;
+} RegistroHistorico;
+
+
+typedef struct {
+    int tamanho;
+    int capacidade;
+    RegistroHistorico *dados;
+} ListaContHistorico;
 
 /**
- * @brief Inicializa a lista.
- * @param [out] lista ponteiro para o início da lista a ser inicializada.
+ * @brief Cria um RegistroHistorico preenchido.
+ * @param[in] cod código do registro.
+ * @param[in] nome nome do registro.
+ * @param[in] pontuacao pontuação do registro.
+ * @return RegistroHistorico criado.
  */
-void inicializar(ListaEnc *lista);
+RegistroHistorico criarRegistro(int cod, const char *nome, int pontuacao);
 
 /**
- * @brief Calcula o tamanho da lista passada.
- * @param lista ponteiro para o início da lista que se quer obter o tamanho.
- * @return Tamanho da lista fornecida.
+ * @brief Inicializa uma lista vazia.
+ * @param[out] l ponteiro pra lista.
  */
-int tamanho(const ListaEnc *lista);
+void inicializar(ListaContHistorico *l);
 
 /**
- * @brief Busca o pedido na lista com base no código fornecido.
- * @param [in] lista ponteiro para o início da lista em que se quer buscar o pedido.
- * @param [in] cod código do pedido que se quer buscar na lista.
- * @return Pedido correspondente ao código fornecido na lista passada.
+ * @brief Calcula o tamanho da lista.
+ * @param[in] l ponteiro pra lista.
+ * @return Tamanho da lista.
  */
-Pedido buscar(const ListaEnc *lista, int cod);
+int tamanho(const ListaContHistorico *l);
 
 /**
- * @brief Insere o pedido no início da lista.
- * @param [in, out] lista ponteiro para o início da lista em que se quer inserir o pedido.
- * @param [in] pedido pedido que se quer inserir na lista.
- * @return 1 caso o pedido seja inserido com sucesso.
- * @return 0 caso ocorra erro na alocação do espaço para o novo pedido.
+ * @brief Insere um registro na posição passada; se não tiver espaço, dobra o espaço dinamicamente.
+ * @param[in,out] l ponteiro pra lista onde se quer inserir o registro.
+ * @param[in] novo registro histórico que se quer inserir.
+ * @param[in] pos índice da posição onde se quer inserir o registro.
+ * @return 1 se inserido com sucesso.
+ * @return 0 se der erro.
  */
-int inserirInicio(ListaEnc *lista, const Pedido pedido);
+int inserir(ListaContHistorico *l, RegistroHistorico novo, int pos);
 
 /**
- * @brief Insere o pedido no fim da lista.
- * @param [in, out] lista ponteiro para o início da lista em que se quer inserir o pedido.
- * @param [in] pedido pedido que se quer inserir na lista.
- * @return 1 caso o pedido seja inserido com sucesso.
- * @return 0 caso ocorra erro na alocação do espaço para o novo pedido.
+ * @brief Retorna o registro armazenado na posição passada.
+ * @param[in] l ponteiro pra lista consultada.
+ * @param[in] pos índice da posição em que se quer consultar o registro.
+ * @return O registro histórico da posição passada, ou um com cod = -1 se a posição for inválida.
  */
-int inserirFim(ListaEnc *lista, const Pedido pedido);
+RegistroHistorico acessar(const ListaContHistorico *l, int pos);
 
 /**
- * @brief Remove o pedido informado da lista.
- * @param [in, out] lista ponteiro para o início da lista da qual se quer remover o pedido.
- * @param [in] cod código do pedido que se quer remover da lista.
- * @return 1 caso seja removido com sucesso.
- * @return 0 caso haja erro na remoção do pedido.
+ * @brief Busca um registro na lista pelo código.
+ * @param[in] l ponteiro pra lista em que se quer buscar o registro.
+ * @param[in] cod código do registro procurado.
+ * @return Índice do registro na lista ou -1 caso não seja encontrado.
  */
-int removerPorCod(ListaEnc *lista, int cod);
+int buscar(const ListaContHistorico *l, int cod);
 
 /**
- * @brief Destrói a lista informada.
- * @param [in, out] lista ponteiro para o início da lista a ser destruída.
+ * @brief Remove o registro da posição informada e move os seguintes pra esquerda.
+ * @param[in,out] l ponteiro pra a lista de onde se quer remover o registro.
+ * @param[in] pos índice do elemento que se quer remover.
+ * @return 1 se for removido com sucesso.
+ * @return 0 se der erro.
  */
-void destruir(ListaEnc *lista);
+int remover(ListaContHistorico *l, int pos);
+
+/**
+ * @brief Destrói a lista.
+ * @param[in,out] l ponteiro pra lista que se quer destruir.
+ */
+void destruir(ListaContHistorico *l);
 
 #endif
