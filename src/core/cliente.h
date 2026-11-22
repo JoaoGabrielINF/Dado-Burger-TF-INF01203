@@ -1,3 +1,4 @@
+#pragma once
 #include "data_structures/lista_receita.h"
 #include "data_structures/pilha_hamburger.h"
 #include "entidade.h"

@@ -1,6 +1,6 @@
-#pragma once
 #include <cliente.h>
 #include <stdlib.h>
+#include "../src/core/metricas.h"
 #include "avl.h"
 
 NodoAvl* avlInicializar() {
@@ -46,26 +46,33 @@ NodoAvl* avlRotEsq(NodoAvl *x) {
     return y;
 }
 
-NodoAvl* avlReequilibrar(NodoAvl *raiz) {
+NodoAvl* avlReequilibrar(NodoAvl *raiz, bool isInserir) {
+    if (isInserir) metricas.nos_inseridos++; // tem que chamar aqui pq a função de inserção é recursiva, aqui que é o ponto final da função
     avlAtualizarAltura(raiz);
     int fb = avlFb(raiz);
 
     /* LL: pesado à esq, filho esq também pesado à esq ou equilibrado */
-    if (fb == +2 && avlFb(raiz->esq) >= 0)
+    if (fb == +2 && avlFb(raiz->esq) >= 0) {
+        if (isInserir) metricas.rotacoes_insercao++;
         return avlRotDir(raiz);
+    }
 
     /* RR: pesado à dir, filho dir também pesado à dir ou equilibrado */
-    if (fb == -2 && avlFb(raiz->dir) <= 0)
+    if (fb == -2 && avlFb(raiz->dir) <= 0) {
+        if (isInserir) metricas.rotacoes_insercao++;
         return avlRotEsq(raiz);
+    }
 
     /* LR: pesado à esq, filho esq pesado à dir → transforma LR em LL */
     if (fb == +2 && avlFb(raiz->esq) < 0) {
+        if (isInserir) metricas.rotacoes_insercao += 2;
         raiz->esq = avlRotEsq(raiz->esq);
         return avlRotDir(raiz);
     }
 
     /* RL: pesado à dir, filho dir pesado à esq → transforma RL em RR */
     if (fb == -2 && avlFb(raiz->dir) > 0) {
+        if (isInserir) metricas.rotacoes_insercao += 2;
         raiz->dir = avlRotDir(raiz->dir);
         return avlRotEsq(raiz);
     }
@@ -95,7 +102,7 @@ NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
         raiz->dir = avlInserir(raiz->dir, valor);
     else
         return raiz;   /* duplicado: ignora */
-    return avlReequilibrar(raiz);
+    return avlReequilibrar(raiz, true);
 }
 
 NodoAvl* avlMinimo(NodoAvl *raiz) {
@@ -123,7 +130,7 @@ NodoAvl* avlRemover(NodoAvl *raiz, int cod) {
         raiz->dado = sucessor->dado;
         raiz->dir  = avlRemover(raiz->dir, sucessor->dado.cod);
     }
-    return avlReequilibrar(raiz);
+    return avlReequilibrar(raiz, false);
 }
 
 NodoAvl* avlDestruir(NodoAvl *raiz) {

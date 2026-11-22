@@ -1,9 +1,7 @@
 #pragma once
 #include <cliente.h>
 
-/**
- * @brief Representação do Nodo da AVL de pedidos
- */
+
 typedef struct str_NodoAvl NodoAvl;
 struct str_NodoAvl {
     Pedido  dado;
@@ -50,7 +48,7 @@ NodoAvl* avlRotDir(NodoAvl *y);
 
 /**
  * @brief Rotação simples à ESQUERDA (caso RR). Simétrica à anterior. y sobe; B (filho esq de y) passa para filho dir de x.
- * @param [in, out] x ponteiro para o nó que se quer rotacionar à direita.
+ * @param [in, out] x ponteiro para o nó que se quer rotacionar à esquerda.
  * @return Nodo atualizado a substituir a posição do nodo de entrada de acordo com a rotação.
  */
 NodoAvl* avlRotEsq(NodoAvl *x);
@@ -58,13 +56,14 @@ NodoAvl* avlRotEsq(NodoAvl *x);
 /**
  * @brief Verifica o FB e aplica a rotação correta. Usada tanto na inserção quanto na remoção.
  * @param [in, out] raiz ponteiro para a raiz da AVL que se quer reequilibrar.
+ * @param [in, out] isInserir booleano que indica se a operação é de inserção, usado para as métricas/relatório
  * @return raiz da AVL equilibrada
  */
-NodoAvl* avlReequilibrar(NodoAvl *raiz);
+NodoAvl* avlReequilibrar(NodoAvl *raiz, bool isInserir);
 
 /**
  * @brief Busca um pedido na AVL em O(log n).
- * @param [in, out] raiz ponteiro para a raiz da AVL em que se quer buscar o pedido.
+ * @param [in] raiz ponteiro para a raiz da AVL em que se quer buscar o pedido.
  * @param [in] cod código do pedido que se quer buscar na AVL.
  * @return Nodo da AVL correspondente ao pedido com o código informado. 
  */
@@ -88,7 +87,7 @@ NodoAvl* avlMinimo(NodoAvl *raiz);
 /**
  * @brief Remove um pedido da AVL.
  * @param [in, out] raiz ponteiro para a raiz da AVL de que se quer remover o pedido.
- * @param cod código do pedido que se quer remover da AVL.
+ * @param [in] cod código do pedido que se quer remover da AVL.
  * @return Raiz da AVL com o pedido removido.
  */
 NodoAvl* avlRemover(NodoAvl *raiz, int cod);
@@ -97,6 +96,5 @@ NodoAvl* avlRemover(NodoAvl *raiz, int cod);
  * @brief Destrói toda a árvore em pós-ordem. Uso: raiz = avlDestruir(raiz).
  * @param [in, out] raiz ponteiro para a raiz da AVL que se quer destruir.
  * @return NULL se raiz == NULL.
- * @return Chamada recursiva para raiz->esq e raiz->dir se raiz != NULL.
  */
 NodoAvl* avlDestruir(NodoAvl *raiz);
