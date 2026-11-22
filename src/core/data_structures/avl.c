@@ -1,6 +1,6 @@
 #include <cliente.h>
 #include <stdlib.h>
-#include "../src/core/metricas.h"
+#include "../metricas.h"
 #include "avl.h"
 
 NodoAvl* avlInicializar() {
@@ -47,7 +47,6 @@ NodoAvl* avlRotEsq(NodoAvl *x) {
 }
 
 NodoAvl* avlReequilibrar(NodoAvl *raiz, bool isInserir) {
-    if (isInserir) metricas.nos_inseridos++; // tem que chamar aqui pq a função de inserção é recursiva, aqui que é o ponto final da função
     avlAtualizarAltura(raiz);
     int fb = avlFb(raiz);
 
@@ -89,6 +88,7 @@ NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
 
 NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
     if (raiz == NULL) {
+        metricas.nos_inseridos++; // tem que chamar aqui pq a função é recursiva, se chegar aqui é garantido que tem um nodo novo sendo criado
         NodoAvl *novo = (NodoAvl*) malloc(sizeof(NodoAvl));
         novo->dado   = valor;
         novo->esq    = NULL;
