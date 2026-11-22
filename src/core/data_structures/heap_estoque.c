@@ -1,5 +1,10 @@
 #include "heap_estoque.h"
 
+void inicializaHeap(HeapEstoque* heap){
+    heap->tamanho_heap = 0;
+    
+}
+
 /* heapify: restaura a propriedade do min-heap descendo o nó i.
    a[] = vetor do heap, n = número de elementos ativos, i = nó a descer. */
 void heapify(Alimento a[], int n, int i) {
@@ -30,7 +35,7 @@ void siftUp(Alimento a[], int i) {
 }
 
 bool inserirHeap(HeapEstoque *heap, const Alimento alimento){
-    if(alimento.tipo_alimento == PERECIVEL && alimento.simbolo_alimento == heap->alimento){
+    if(alimento.simbolo_alimento == heap->alimento){
         heap->estoque_perecivel[heap->tamanho_heap] = alimento;
         siftUp(heap->estoque_perecivel, heap->tamanho_heap);
         heap->tamanho_heap++;

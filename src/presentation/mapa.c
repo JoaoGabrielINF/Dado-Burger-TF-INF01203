@@ -16,12 +16,15 @@ void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo){
             case BLOQUEADO_SIMBOLO:
                 break;
             case CLIENTE_SIMBOLO:
-                jogo->cliente.posicao = posicao_pixels;
-                jogo->cliente.tile_inicial.linha = linha;
-                jogo->cliente.tile_inicial.coluna = coluna;
-                jogo->cliente.tile_atual.linha = linha;
-                jogo->cliente.tile_atual.coluna = coluna;
-                jogo->cliente.textura_atual = 0;
+                if (jogo->fila_clientes.frente != NULL) {
+                    Cliente *cliente = &jogo->fila_clientes.frente->cliente;
+                    cliente->posicao = posicao_pixels;
+                    cliente->tile_inicial.linha = linha;
+                    cliente->tile_inicial.coluna = coluna;
+                    cliente->tile_atual.linha = linha;
+                    cliente->tile_atual.coluna = coluna;
+                    cliente->textura_atual = 0;
+                }
                 break;
             case JOGADOR_SIMBOLO:
                 jogo->jogador.posicao = posicao_pixels;
@@ -32,16 +35,22 @@ void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo){
             break;
             case FOGAO_SIMBOLO:
                 jogo-> equipamentos[FOGAO].posicao_pixels = posicao_pixels;
+                jogo-> equipamentos[FOGAO].hitbox = (Rectangle){
+                    posicao_pixels.x, posicao_pixels.y, TILE_SIZE * 2.0f, TILE_SIZE * 2.0f};
                 jogo-> equipamentos[FOGAO].tile_atual.linha = linha;
                 jogo-> equipamentos[FOGAO].tile_atual.coluna = coluna;
                 break;
             case BANCADA_SIMBOLO:
                 jogo-> equipamentos[BANCADA].posicao_pixels = posicao_pixels;
+                jogo-> equipamentos[BANCADA].hitbox = (Rectangle){
+                    posicao_pixels.x, posicao_pixels.y, TILE_SIZE * 2.0f, TILE_SIZE};
                 jogo-> equipamentos[BANCADA].tile_atual.linha = linha;
                 jogo-> equipamentos[BANCADA].tile_atual.coluna = coluna;
                 break;
             case TABUA_SIMBOLO:
                 jogo-> equipamentos[TABUA].posicao_pixels = posicao_pixels;
+                jogo-> equipamentos[TABUA].hitbox = (Rectangle){
+                    posicao_pixels.x, posicao_pixels.y, TILE_SIZE * 2.0f, TILE_SIZE * 2.0f};
                 jogo-> equipamentos[TABUA].tile_atual.linha = linha;
                 jogo-> equipamentos[TABUA].tile_atual.coluna =  coluna;
                 break;
@@ -51,4 +60,3 @@ void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo){
         } // Fim da coluna
     }
 }
-

@@ -10,6 +10,11 @@ typedef struct {
 } HeapEstoque;
 
 /**
+ * @brief Inicializa a heap
+ * @param heap estado atual da heap
+ */
+void inicializaHeap(HeapEstoque* heap);
+/**
  * @brief Restaura a propriedade de um nó que pode estar maior que um de seus filhos
  * @param[in,out] a vetor de alimentos que representa o heap
  * @param[in] n número de elementos ativos no heap
