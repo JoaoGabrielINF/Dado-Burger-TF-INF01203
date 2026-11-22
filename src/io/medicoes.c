@@ -5,6 +5,9 @@
 
 #define ROTULO_LARGURA 32
 
+/* A seção de ordenação só entra no relatório se o Histórico já foi acessado */
+static bool ordenacao_ja_medida = false;
+
 /* Escreve "rótulo .................. valor" com o rótulo alinhado à esquerda. */
 static void linha_valor(FILE *destino, const char *rotulo, const char *valor)
 {
@@ -99,13 +102,14 @@ void medicoes_gravar_relatorio_completo(FILE *destino)
     secao_historico_carregamento(destino);
     secao_avl_buscas(destino);
     secao_hash(destino);
-    if (metricas.historico_ordenado)
+    if (ordenacao_ja_medida)
         medicoes_gravar_ordenacao(destino);
     fprintf(destino, "================================\n");
 }
 
 void medicoes_gravar_ordenacao(FILE *destino)
 {
+    ordenacao_ja_medida = true;
     fprintf(destino, "-- Ordenacao do historico (ao acessar Historico) --\n");
     char buf[96];
     snprintf(buf, sizeof(buf), "%d entradas", metricas.ordenacao_tamanho);
