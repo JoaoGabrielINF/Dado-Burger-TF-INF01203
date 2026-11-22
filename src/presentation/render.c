@@ -10,6 +10,40 @@ Texture2D parede_baixo;
 Texture2D bancada_normal;
 Texture2D bancada_tabua;
 Texture2D fogao;
+Texture2D mochila;
+static bool estoque_aberto;
+static int pagina_estoque;
+enum { NUMERO_ALIMENTOS_ESTOQUE = 12 };
+static const char *const caminhos_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE] = {
+    "assets/imagens/ingredientes/pao_cima.png",
+    "assets/imagens/ingredientes/ketchup.png",
+    "assets/imagens/ingredientes/mostarda.png",
+    "assets/imagens/ingredientes/picles.png",
+    "assets/imagens/ingredientes/alface.png",
+    "assets/imagens/ingredientes/queijo_suico.png",
+    "assets/imagens/ingredientes/queijo_cheddar.png",
+    "assets/imagens/ingredientes/cebola.png",
+    "assets/imagens/ingredientes/tomate.png",
+    "assets/imagens/ingredientes/carne.png",
+    "assets/imagens/ingredientes/ovo_frito.png",
+    "assets/imagens/ingredientes/bacon.png"
+};
+static const char *const nomes_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE] = {
+    "Pao de cima",
+    "Ketchup",
+    "Mostarda",
+    "Picles",
+    "Alface",
+    "Queijo suico",
+    "Queijo cheddar",
+    "Cebola",
+    "Tomate",
+    "Carne",
+    "Ovo frito",
+    "Bacon"
+};
+static Texture2D texturas_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE];
+
 void carregaAssets(void)
 {
     jogador_frames = LoadTexture("assets/imagens/principal.png");
@@ -21,6 +55,10 @@ void carregaAssets(void)
     bancada_normal = LoadTexture("assets/imagens/cozinha/bancada.png");
     fogao = LoadTexture("assets/imagens/cozinha/fogao.png");
     bancada_tabua = LoadTexture("assets/imagens/cozinha/bancada_tabua.png");
+    mochila = LoadTexture("assets/imagens/mochila.png");
+    for (int i = 0; i < NUMERO_ALIMENTOS_ESTOQUE; i++) {
+        texturas_alimentos_estoque[i] = LoadTexture(caminhos_alimentos_estoque[i]);
+    }
 }
 
 bool coloreSeColide(Rectangle rec, Vector2 pos_mouse)
@@ -43,6 +81,68 @@ void desenhaTextoCentralizado(Font fonte, const char *texto, Rectangle ret,
         ret.y + ret.height / 2 - (t.y / 2)};
 
     DrawTextEx(fonte, texto, pos, tamanho, espaco, cor);
+}
+
+static const char *nomeIngrediente(char ingrediente)
+{
+    switch (ingrediente)
+    {
+    case PAO_SIMBOLO: return "Pao de cima";
+    case KETCHUP_SIMBOLO: return "Ketchup";
+    case MOSTARDA_SIMBOLO: return "Mostarda";
+    case PICLES_SIMBOLO: return "Picles";
+    case ALFACE_SIMBOLO: return "Alface";
+    case QUEIJO_SUICO_SIMBOLO: return "Queijo suico";
+    case QUEIJO_CHEDDAR_SIMBOLO: return "Queijo cheddar";
+    case CEBOLA_SIMBOLO: return "Cebola";
+    case TOMATE_SIMBOLO: return "Tomate";
+    case CARNE_SIMBOLO: return "Carne";
+    case OVO_FRITO_SIMBOLO: return "Ovo frito";
+    case BACON_SIMBOLO: return "Bacon";
+    default: return "Ingrediente desconhecido";
+    }
+}
+
+void desenhaComanda(const ListaReceita *receita)
+{
+    const float margem = 16.0f;
+    const float largura = 240.0f;
+    const float altura_cabecalho = 48.0f;
+    const float altura_linha = 26.0f;
+    int quantidade = 0;
+
+    for (NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
+        quantidade++;
+
+    float altura = altura_cabecalho + (quantidade > 0 ? quantidade : 1) * altura_linha;
+    Rectangle comanda = {
+        margem,
+        JANELA_ALTURA - margem - altura,
+        largura,
+        altura
+    };
+
+    DrawRectangleRec(comanda, RAYWHITE);
+    DrawRectangleLinesEx(comanda, 2.0f, DARKGRAY);
+    DrawTextEx(fonte_jogo, "Comanda", (Vector2){comanda.x + 12.0f, comanda.y + 8.0f},
+               22.0f, ESPACO_FONTE, BLACK);
+
+    if (receita->ini == NULL)
+    {
+        DrawTextEx(fonte_jogo, "Aguardando pedido",
+                   (Vector2){comanda.x + 12.0f, comanda.y + altura_cabecalho},
+                   18.0f, ESPACO_FONTE, DARKGRAY);
+        return;
+    }
+
+    int linha = 0;
+    for (NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
+    {
+        DrawTextEx(fonte_jogo, nomeIngrediente(nodo->ingrediente),
+                   (Vector2){comanda.x + 12.0f, comanda.y + altura_cabecalho + linha * altura_linha},
+                   18.0f, ESPACO_FONTE, BLACK);
+        linha++;
+    }
 }
 
 /* Desenha texto com quebra de linha por palavras dentro de largura_maxima.
@@ -262,7 +362,176 @@ void desenhaJogador(Jogador *jogador)
 }
 
 void desenhaEquipamentos(const Jogo * jogo){
-    
+    int equipamento_destacado = -1;
+    for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++) {
+        if (CheckCollisionRecs(jogo->jogador.hitbox, jogo->equipamentos[i].hitbox)) {
+            equipamento_destacado = i;
+            break;
+        }
+    }
+
+    if (equipamento_destacado >= 0 && IsKeyPressed(KEY_E)) {
+        /* TODO: abrir a mochila do equipamento destacado. */
+    }
+
+    Color tinta_destaque = {255, 210, 210, 255};
+    Rectangle retangulo_fogao = {
+        jogo->equipamentos[FOGAO].posicao_pixels.x,
+        jogo->equipamentos[FOGAO].posicao_pixels.y,
+        TILE_SIZE * 2.0f,
+        TILE_SIZE * 2.0f
+    };
+    DrawTexturePro(fogao,
+                   (Rectangle){0, 0, (float)fogao.width, (float)fogao.height},
+                   retangulo_fogao, (Vector2){0, 0}, 0.0f,
+                   equipamento_destacado == FOGAO ? tinta_destaque : WHITE);
+
+    Rectangle retangulo_tabua = {
+        jogo->equipamentos[TABUA].posicao_pixels.x,
+        jogo->equipamentos[TABUA].posicao_pixels.y,
+        TILE_SIZE * 2.0f,
+        TILE_SIZE * 2.0f
+    };
+    DrawTexturePro(bancada_tabua,
+                   (Rectangle){0, 0, (float)bancada_tabua.width, (float)bancada_tabua.height},
+                   retangulo_tabua, (Vector2){0, 0}, 0.0f,
+                   equipamento_destacado == TABUA ? tinta_destaque : WHITE);
+
+    Rectangle retangulo_bancada = {
+        jogo->equipamentos[BANCADA].posicao_pixels.x,
+        jogo->equipamentos[BANCADA].posicao_pixels.y,
+        TILE_SIZE * 2.0f,
+        TILE_SIZE
+    };
+    DrawTexturePro(bancada_normal,
+                   (Rectangle){0, 0, (float)bancada_normal.width, (float)bancada_normal.height},
+                   retangulo_bancada, (Vector2){0, 0}, 0.0f,
+                   equipamento_destacado == BANCADA ? tinta_destaque : WHITE);
+}
+
+void desenha_alimentos_no_estoque(Rectangle retangulo_estoque)
+{
+    const float margem = 16.0f;
+    const float largura_barra = 20.0f;
+    const float espaco_barra = 12.0f;
+    const float altura_alimento = 64.0f;
+    const float espaco_alimento = 8.0f;
+    const float largura_alimento =
+        retangulo_estoque.width - 2.0f * margem - largura_barra - espaco_barra;
+    const float x_alimentos = retangulo_estoque.x + margem;
+    const float x_barra = retangulo_estoque.x + retangulo_estoque.width -
+                          margem - largura_barra;
+    const float altura_botao = 24.0f;
+    const float espaco_controle = 8.0f;
+    Rectangle botao_cima = {
+        x_barra, retangulo_estoque.y + margem, largura_barra, altura_botao};
+    Rectangle botao_baixo = {
+        x_barra,
+        retangulo_estoque.y + retangulo_estoque.height - margem - altura_botao,
+        largura_barra,
+        altura_botao
+    };
+    Rectangle trilho = {
+        x_barra,
+        botao_cima.y + botao_cima.height + espaco_controle,
+        largura_barra,
+        botao_baixo.y - espaco_controle -
+            (botao_cima.y + botao_cima.height + espaco_controle)
+    };
+    Vector2 mouse = GetMousePosition();
+
+    if (IsMouseButtonPressed(0)) {
+        if (CheckCollisionPointRec(mouse, botao_cima)) {
+            pagina_estoque = 0;
+        } else if (CheckCollisionPointRec(mouse, botao_baixo)) {
+            pagina_estoque = 1;
+        } else if (CheckCollisionPointRec(mouse, trilho)) {
+            pagina_estoque = mouse.y < trilho.y + trilho.height / 2.0f ? 0 : 1;
+        }
+    }
+
+    const int quantidade_alimentos = pagina_estoque == 0 ? 7 : 5;
+    const float altura_lista =
+        quantidade_alimentos * altura_alimento +
+        (quantidade_alimentos - 1) * espaco_alimento;
+    const float y_alimentos = retangulo_estoque.y +
+                              (retangulo_estoque.height - altura_lista) / 2.0f;
+    const float altura_indicador = 64.0f;
+    Rectangle indicador = {
+        x_barra,
+        pagina_estoque == 0 ? trilho.y : trilho.y + trilho.height - altura_indicador,
+        largura_barra,
+        altura_indicador
+    };
+
+    DrawRectangleRec(trilho, LIGHTGRAY);
+    DrawRectangleRounded(botao_cima, 0.2f, 4, WHITE);
+    DrawRectangleRoundedLinesEx(botao_cima, 0.2f, 4, 1.0f, BLACK);
+    DrawTriangle(
+        (Vector2){botao_cima.x + largura_barra / 2.0f, botao_cima.y + 5.0f},
+        (Vector2){botao_cima.x + 4.0f, botao_cima.y + 19.0f},
+        (Vector2){botao_cima.x + largura_barra - 4.0f, botao_cima.y + 19.0f},
+        BLACK);
+    DrawRectangleRounded(botao_baixo, 0.2f, 4, WHITE);
+    DrawRectangleRoundedLinesEx(botao_baixo, 0.2f, 4, 1.0f, BLACK);
+    DrawTriangle(
+        (Vector2){botao_baixo.x + largura_barra / 2.0f, botao_baixo.y + 19.0f},
+        (Vector2){botao_baixo.x + largura_barra - 4.0f, botao_baixo.y + 5.0f},
+        (Vector2){botao_baixo.x + 4.0f, botao_baixo.y + 5.0f},
+        BLACK);
+    DrawRectangleRounded(indicador, 0.3f, 4, GRAY);
+
+    for (int i = 0; i < quantidade_alimentos; i++) {
+        const int indice_alimento = pagina_estoque * 7 + i;
+        Rectangle retangulo_alimento = {
+            x_alimentos,
+            y_alimentos + i * (altura_alimento + espaco_alimento),
+            largura_alimento,
+            altura_alimento
+        };
+        DrawRectangleRounded(retangulo_alimento, 0.2f, 8, WHITE);
+        DrawRectangleRoundedLinesEx(retangulo_alimento, 0.2f, 8, 1.0f, BLACK);
+
+        Rectangle fundo_icone = {
+            retangulo_alimento.x + 8.0f,
+            retangulo_alimento.y + 8.0f,
+            48.0f,
+            48.0f
+        };
+        DrawRectangleRounded(fundo_icone, 0.15f, 4, LIGHTGRAY);
+        Texture2D textura = texturas_alimentos_estoque[indice_alimento];
+        DrawTexturePro(textura,
+                       (Rectangle){0, 0, (float)textura.width, (float)textura.height},
+                       (Rectangle){fundo_icone.x + 4.0f, fundo_icone.y + 4.0f, 40.0f, 40.0f},
+                       (Vector2){0, 0}, 0.0f, WHITE);
+
+        const float x_texto = fundo_icone.x + fundo_icone.width + 8.0f;
+        DrawTextEx(fonte_jogo, nomes_alimentos_estoque[indice_alimento],
+                   (Vector2){x_texto, retangulo_alimento.y + 8.0f},
+                   16.0f, 1.0f, BLACK);
+        DrawTextEx(fonte_jogo, "Quantidade: 0",
+                   (Vector2){x_texto, retangulo_alimento.y + 36.0f},
+                   14.0f, 1.0f, DARKGRAY);
+    }
+}
+
+void desenha_estoque(void)
+{
+    const float largura_estoque = JANELA_LARGURA / 4.0f;
+    const float topo_mochila = JANELA_ALTURA - 136.0f;
+    const float margem_mochila = 16.0f;
+    const float margem_topo = 16.0f;
+    const float limite_estoque = topo_mochila - margem_mochila;
+    Rectangle retangulo_estoque = {
+        JANELA_LARGURA - largura_estoque - 24.0f,
+        margem_topo,
+        largura_estoque,
+        limite_estoque - margem_topo
+    };
+
+    DrawRectangleRec(retangulo_estoque, RED);
+    DrawRectangleLinesEx(retangulo_estoque, 3.0f, BLACK);
+    desenha_alimentos_no_estoque(retangulo_estoque);
 }
 
 void desenhaJogo(Jogo *jogo)
@@ -588,6 +857,7 @@ void desenhaJogo(Jogo *jogo)
         if(jogo->jogador.posicao.x >= distancia_para_cozinha){
             jogo->tela_atual = COZINHA;
         }
+        desenhaComanda(&jogo->jogador.pedido_atual.receita_pedido);
 
         break;
 
@@ -595,12 +865,37 @@ void desenhaJogo(Jogo *jogo)
         Rectangle origem_2 = {0, 0, (float)cozinha.width, (float)cozinha.height};
         Rectangle destino_2 = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(cozinha, origem_2, destino_2, (Vector2){0, 0}, 0.0f, WHITE);
+        atualiza_hitbox_jogador(&jogo->jogador);
         desenhaEquipamentos(jogo);
         desenhaJogador(&jogo->jogador);
         Rectangle origem_parede_baixo = {
             0, 0, (float)parede_baixo.width, (float)cozinha.height};
         DrawTexturePro(parede_baixo, origem_parede_baixo, destino_2,
                        (Vector2){0, 0}, 0.0f, WHITE);
+        Rectangle fundo_mochila = {
+            JANELA_LARGURA - 136.0f,
+            JANELA_ALTURA - 136.0f,
+            112.0f,
+            112.0f
+        };
+        bool mochila_em_foco = CheckCollisionPointRec(GetMousePosition(), fundo_mochila);
+        if (mochila_em_foco && IsMouseButtonPressed(0)) {
+            estoque_aberto = !estoque_aberto;
+        }
+        if (estoque_aberto) {
+            desenha_estoque();
+        }
+        DrawRectangleRounded(fundo_mochila, 0.2f, 8, WHITE);
+        if (mochila_em_foco) {
+            DrawRectangleRounded(fundo_mochila, 0.2f, 8, (Color){0, 255, 0, 64});
+        }
+        DrawTexturePro(mochila,
+                       (Rectangle){0, 0, (float)mochila.width, (float)mochila.height},
+                       (Rectangle){fundo_mochila.x + 8.0f, fundo_mochila.y + 8.0f, 96.0f, 96.0f},
+                       (Vector2){0, 0}, 0.0f,
+                       mochila_em_foco ? (Color){215, 255, 215, 255} : WHITE);
+        DrawRectangleRoundedLinesEx(fundo_mochila, 0.2f, 8, 2.0f, BLACK);
+        desenhaComanda(&jogo->jogador.pedido_atual.receita_pedido);
         atualiza_anim_entidades(jogo);
     default:
         break;
@@ -612,6 +907,10 @@ void descarregaAssets(void)
     UnloadTexture(fogao);
     UnloadTexture(bancada_normal);
     UnloadTexture(bancada_tabua);
+    UnloadTexture(mochila);
+    for (int i = 0; i < NUMERO_ALIMENTOS_ESTOQUE; i++) {
+        UnloadTexture(texturas_alimentos_estoque[i]);
+    }
     UnloadTexture(fundo);
     UnloadTexture(parede_baixo);
 }

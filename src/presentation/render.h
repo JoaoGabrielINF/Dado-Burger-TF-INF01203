@@ -45,6 +45,31 @@ void desenhaJogador(Jogador *jogador);
 void desenhaEquipamentos(const Jogo* jogo);
 
 /**
+ * @brief Desenha a comanda com os ingredientes de uma receita.
+ * @param[in] receita Lista de ingredientes a apresentar
+ */
+void desenhaComanda(const ListaReceita *receita);
+
+/**
+ * @brief Desenha os ícones, nomes, quantidades e controles de paginação do estoque.
+ *
+ * Cada alimento é apresentado em um retângulo branco com ícone sobre fundo cinza,
+ * nome e campo de quantidade. A primeira página exibe sete alimentos e a segunda
+ * os cinco restantes; as setas da barra lateral alternam entre as páginas.
+ *
+ * @param[in] retangulo_estoque Retângulo que delimita o painel do estoque.
+ */
+void desenha_alimentos_no_estoque(Rectangle retangulo_estoque);
+
+/**
+ * @brief Desenha o contorno vermelho do painel de estoque na cozinha.
+ *
+ * O painel ocupa um quarto da largura da janela, fica alinhado à direita e
+ * estende-se do topo da janela até um pouco acima do cartão da mochila.
+ */
+void desenha_estoque(void);
+
+/**
  * @brief Desenha os elementos da tela atual do jogo.
  * @param[in,out] jogo Estado do jogo a desenhar
  */

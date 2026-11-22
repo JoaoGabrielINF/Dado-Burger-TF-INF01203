@@ -4,8 +4,8 @@
 
 /**
  * @brief Retorna a regiao solida (em pixels) de um tile do mapa.
- *        '#' colide com o tile inteiro; 'M' (mesa) colide apenas com a faixa
- *        superior do tile; demais simbolos nao colidem.
+ *        '#' colide com o tile inteiro; 'M' (mesa) colide com a metade
+ *        superior e 'E' com uma faixa frontal estreita; demais simbolos nao colidem.
  * @param[in] tile Simbolo do tile
  * @param[in] linha Linha do tile na matriz
  * @param[in] coluna Coluna do tile na matriz
@@ -18,6 +18,8 @@ static Rectangle regiao_solida_tile(char tile, int linha, int coluna)
         return (Rectangle){coluna * TILE_SIZE, linha * TILE_SIZE, TILE_SIZE, TILE_SIZE};
     case MESA_SIMBOLO:
         return (Rectangle){coluna * TILE_SIZE, linha * TILE_SIZE, TILE_SIZE, ALTURA_COLISAO_MESA};
+    case EQUIPAMENTO_FRENTE_SIMBOLO:
+        return (Rectangle){coluna * TILE_SIZE, linha * TILE_SIZE, TILE_SIZE, ALTURA_COLISAO_EQUIPAMENTO};
     case MESA_LATERAL_SIMBOLO:
         /* balcao vertical: a faixa solida corre pela lateral esquerda do tile */
         return (Rectangle){coluna * TILE_SIZE, linha * TILE_SIZE, ALTURA_COLISAO_MESA, TILE_SIZE};
