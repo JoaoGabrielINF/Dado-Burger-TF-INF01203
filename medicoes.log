@@ -1,0 +1,9 @@
+-- AVL: carregamento --
+Nos inseridos:                   15696485
+Altura resultante:               20
+Rotacoes (insercao):             837233
+Tempo de carregamento:           4.346000 s
+
+-- Historico: carregamento --
+Entradas carregadas:             100000
+

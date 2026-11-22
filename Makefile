@@ -4,7 +4,7 @@
 #
 #   Uso (na raiz do projeto):
 #     make            -> compila o executável dado_burger.exe
-#     make run        -> compila se necessário e abre o jogo
+#     make run        -> compila se necessário e abre o jogo com os dados padrão
 #     make clean      -> apaga objetos e o executável
 #
 #   O compilador é resolvido nesta ordem:
@@ -44,20 +44,20 @@ LDLIBS   := -L$(RAYLIB_PATH)/lib -lraylib -lopengl32 -lgdi32 -lwinmm
 # --------------------------------- Fontes -----------------------------------
 SRC_DIRS := src src/core src/core/data_structures src/core/sort src/core/time src/presentation src/io src/gameplay
 SRCS := $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.c))
-OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
+OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 # ---------------------------------- Regras ----------------------------------
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(CFLAGS) $(LDLIBS)
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $(OBJECTS) $(CFLAGS) $(LDLIBS)
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) dados/pedidos.txt dados/historico.txt
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)

@@ -71,6 +71,18 @@
 /** Numero de equipamentos na cozinha */
 #define NUMERO_EQUIPAMENTOS 3
 
+/** Quantidade de alimentos pereciveis na heap */
+#define QUANTIDADE_ALIMENTOS_PERECIVEIS 3
+
+/** Posição da heap do alimento carne no vetor de heaps*/
+#define HEAP_CARNE 0
+
+/** Posição da heap do alimento ovo no vetor de heaps*/
+#define HEAP_OVO 1 
+
+/** Posição da heap do alimento bacon no vetor de heaps*/
+#define HEAP_BACON 2
+
 /** Validade inicial dos alimentos perecíveis, medida em turnos */
 #define TURNOS_PERECIVEIS 9
 
@@ -119,6 +131,9 @@
 /** Simbolo da tábua em tela_jogo_cozinha.txt */
 #define TABUA_SIMBOLO 'u'
 
+/** Simbolo da faixa de colisao frontal dos equipamentos em tela_jogo_cozinha.txt */
+#define EQUIPAMENTO_FRENTE_SIMBOLO 'E'
+
 /** Simbolo do jogador nos .txt */
 #define JOGADOR_SIMBOLO 'j'
 
@@ -147,8 +162,16 @@
 /** Altura, em pixels, da faixa de colisao de uma mesa dentro do tile */
 #define ALTURA_COLISAO_MESA (TILE_SIZE / 2)
 
+/** Altura, em pixels, da faixa de colisao frontal dos equipamentos */
+#define ALTURA_COLISAO_EQUIPAMENTO 8
+
 /** Velocidade de deslocamento do jogador, em pixels por segundo */
 #define VELOCIDADE_JOGADOR 180.0f
+
+/** Máximo de clientes desenhados ao mesmo tempo na fila */
+#define MAX_CLIENTES_VISIVEIS 6
+
+#define MAX_CLIENTES_FILA 10
 
 /** Limites do desenho do personagem dentro do frame de 72x72 do sprite sheet
  *  (bounding box medida em assets/imagens/principal.png) */
