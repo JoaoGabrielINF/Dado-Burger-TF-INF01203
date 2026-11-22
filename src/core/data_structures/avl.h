@@ -13,6 +13,12 @@ struct str_NodoAvl {
 };
 
 /**
+ * @brief "Inicializa" a AVL. Literalmente só retorna null, é uma função meio inútil e não tava no TAD da aula, mas criei mais por consistência mesmo.
+ * @return NULL.
+ */
+NodoAvl* avlInicializar();
+
+/**
  * @brief Fornece a altura do nó (convenção: folha=0, NULL=-1). Necessário para que 1 + max(h_esq, h_dir) funcione corretamente.
  * @param [in] no ponteiro para o nó que se quer a altura
  * @return -1 se o nó é NULL

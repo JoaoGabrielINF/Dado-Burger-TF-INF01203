@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include "avl.h"
 
+NodoAvl* avlInicializar() {
+    return NULL;
+}
+
 int avlAltura(const NodoAvl *no) {
     if (no == NULL) return -1;
     return no->altura;
