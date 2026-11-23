@@ -135,7 +135,7 @@ void desenha_comanda(const ListaReceita *receita)
     const float altura_linha = 26.0f;
     int quantidade = 0;
 
-    for (NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
+    for (const NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
         quantidade++;
 
     float altura = altura_cabecalho + (quantidade > 0 ? quantidade : 1) * altura_linha;
@@ -160,7 +160,7 @@ void desenha_comanda(const ListaReceita *receita)
     }
 
     int linha = 0;
-    for (NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
+    for (const NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
     {
         DrawTextEx(fonte_jogo, nome_ingrediente(nodo->ingrediente),
                    (Vector2){comanda.x + 12.0f, comanda.y + altura_cabecalho + linha * altura_linha},
@@ -233,9 +233,11 @@ void desenha_hamburger(Jogo *jogo)
     bool todos_corretos = quantidade > 0;
     texto_y -= altura_linha;
 
-    for (int i = quantidade - 1;
-         i >= 0 && texto_y >= painel.y + 28.0f;
-         i--) {
+    int limite_vertical = (int)painel.y + 28;
+    for (int i = quantidade - 1; i >= 0; i--) {
+        if ((int)texto_y < limite_vertical)
+            break;
+
         if (!camadas[i].correto)
             todos_corretos = false;
 
@@ -820,7 +822,7 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
                     }
                 }
                 
-                if(ta_no_estoque){
+                if(ta_no_estoque && !(tamanhoPilha(&jogo->jogador.pedido_atual.pilha_hamburger) == tamanhoLista(&jogo->jogador.pedido_atual.receita_pedido))){
                 jogo->jogador.pedido_atual.adicionar_pilha =
                     simbolos_bancada[i];
                 jogo->jogador.pedido_atual.opcao = ADICIONA;

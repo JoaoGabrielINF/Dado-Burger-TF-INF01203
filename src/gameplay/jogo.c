@@ -229,7 +229,7 @@ void compara_lista_e_pilha(PilhaHamburger *pilha, const ListaReceita *lista){
         pushPilha(&pilha_aux, ingrediente_auxiliar);
     }
 
-    while(!estaVaziaPilha(&pilha_aux) && aux->prox  != NULL){
+    while(!estaVaziaPilha(&pilha_aux)){
         popPilha(&pilha_aux, &ingrediente_auxiliar);
         pushPilha(pilha, ingrediente_auxiliar);
         if(aux->ingrediente == ingrediente_auxiliar){
