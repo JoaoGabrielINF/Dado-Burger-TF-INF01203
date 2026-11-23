@@ -79,6 +79,7 @@ NodoAvl* avlReequilibrar(NodoAvl *raiz, bool isInserir) {
 }
 
 NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
+    metricas.total_comparacoes++;
     if (raiz == NULL)           return NULL;
     if (cod == raiz->dado.cod) return raiz;
     if (cod < raiz->dado.cod)  return avlBuscar(raiz->esq, cod);

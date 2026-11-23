@@ -98,6 +98,7 @@ void inicializa_jogo(Jogo *jogo)
 void inicializa_pedido_cliente(Jogo *jogo)
 {
     //     Sorteio de pedido de cliente
+    Timer t;
     srand((unsigned)time(NULL));
     int pedido_cliente = 1 + rand() % (maior_codigo_avl - 1 + 1);
     jogo->fila_clientes.frente->cliente.codigo_pedido = pedido_cliente;
@@ -111,7 +112,9 @@ void inicializa_pedido_cliente(Jogo *jogo)
     {
         metricas.hash_misses++;
         NodoAvl *pedido_buscado;
+        timer_iniciar(&t);
         pedido_buscado = avlBuscar(pedidos_avl, pedido_cliente);
+        metricas.tempo_buscas += timer_parar(&t);
         metricas.total_buscas++;
         if (inserirHash(&cache_pedidos, pedido_cliente, &pedido_buscado->dado.receita_pedido))
         {

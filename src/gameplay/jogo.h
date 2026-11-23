@@ -4,6 +4,7 @@
 #include <time.h>
 #include "../presentation/animacao.h"
 #include "../core/dados.h"
+#include "../core/time/time.h"
 #include "metricas.h"
 
 /**
