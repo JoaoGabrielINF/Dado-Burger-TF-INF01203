@@ -12,24 +12,27 @@ void inicializarHash(TabelaHash *t){
     
 }
 
-void inserirHash(TabelaHash *t, int chave, int valor) {
+bool inserirHash(TabelaHash *t, int chave, const ListaReceita *lista) {
     int i = chave % t->m;
     NoHash *novo_no = (NoHash*) malloc(sizeof(NoHash));
+    bool colisao = true;
     novo_no->chave = chave;
-    novo_no->valor = valor;
+    novo_no->valor.ini = lista->ini;
+    if(t->tabela[i] == NULL) colisao = false;
     novo_no->prox  = t->tabela[i];   /* insere NoHash início */
     t->tabela[i] = novo_no;
     t->n++;
+    return colisao;
 }
 
-int buscarHash(TabelaHash *t, int chave) {
+NodoLista* buscarHash(TabelaHash *t, int chave) {
     int i = chave % t->m;
     NoHash *p = t->tabela[i];
     while (p != NULL) {
-        if (p->chave == chave) return p->valor;
+        if (p->chave == chave) return p->valor.ini;
         p = p->prox;
     }
-    return false;   /* não encontrado */
+    return NULL;   /* não encontrado */
 }
 
 bool removerHash(TabelaHash *t, int chave) {

@@ -7,26 +7,26 @@ void inicializaHeap(HeapEstoque* heap){
 
 /* heapify: restaura a propriedade do min-heap descendo o nó i.
    a[] = vetor do heap, n = número de elementos ativos, i = nó a descer. */
-void heapify(Alimento a[], int n, int i) {
+void heapify(int validade[], int n, int i) {
     int menor = i;
     int esq   = 2*i + 1;
     int dir   = 2*i + 2;
 
-    if (esq < n && a[esq].validade < a[menor].validade) menor = esq;
-    if (dir < n && a[dir].validade < a[menor].validade) menor = dir;
+    if (esq < n && validade[esq] < validade[menor]) menor = esq;
+    if (dir < n && validade[dir] < validade[menor]) menor = dir;
 
     if (menor != i) {
-        Alimento tmp = a[i]; a[i] = a[menor]; a[menor] = tmp;
-        heapify(a, n, menor);
+        int tmp = validade[i]; validade[i] = validade[menor]; validade[menor] = tmp;
+        heapify(validade, n, menor);
     }
 }
 
 /* sift-up: restaura a propriedade do min-heap subindo o nó i. */
-void siftUp(Alimento a[], int i) {
+void siftUp(int validade[], int i) {
     while (i > 0) {
         int pai = (i - 1) / 2;
-        if (a[i].validade < a[pai].validade) {
-            Alimento tmp = a[i]; a[i] = a[pai]; a[pai] = tmp;
+        if (validade[i] < validade[pai]) {
+            int tmp = validade[i]; validade[i] = validade[pai]; validade[pai] = tmp;
             i = pai;
         } else {
             break;
@@ -34,10 +34,10 @@ void siftUp(Alimento a[], int i) {
     }
 }
 
-bool inserirHeap(HeapEstoque *heap, const Alimento alimento){
-    if(alimento.simbolo_alimento == heap->alimento){
-        heap->estoque_perecivel[heap->tamanho_heap] = alimento;
-        siftUp(heap->estoque_perecivel, heap->tamanho_heap);
+bool inserirHeap(HeapEstoque *heap, int validade, const char alimento){
+    if(alimento == heap->alimento){
+        heap->validade_alimentos[heap->tamanho_heap] = validade;
+        siftUp(heap->validade_alimentos, heap->tamanho_heap);
         heap->tamanho_heap++;
         return true;
     }
@@ -45,21 +45,21 @@ bool inserirHeap(HeapEstoque *heap, const Alimento alimento){
 
 }
 
-bool removerHeap(HeapEstoque *heap, Alimento* alimento){
+bool removerHeap(HeapEstoque *heap, char* alimento){
     
     if(heap->tamanho_heap <= 0){
         return false;
     }
-    *alimento = heap->estoque_perecivel[0];
-    heap->estoque_perecivel[0] = heap->estoque_perecivel[heap->tamanho_heap - 1];
+    *alimento = heap->validade_alimentos[0];
+    heap->validade_alimentos[0] = heap->validade_alimentos[heap->tamanho_heap - 1];
     heap->tamanho_heap--;
-    heapify(heap->estoque_perecivel, heap->tamanho_heap, 0);
+    heapify(heap->validade_alimentos, heap->tamanho_heap, 0);
     return true;
 }
 
-bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, Alimento *alimento){
-    if(heap->estoque_perecivel[0].validade == turno_atual){
-        while(heap->estoque_perecivel[0].validade == turno_atual){
+bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, char *alimento){
+    if(heap->validade_alimentos[0] == turno_atual){
+        while(heap->validade_alimentos[0] == turno_atual){
             removerHeap(heap, alimento);
         }
         return true;

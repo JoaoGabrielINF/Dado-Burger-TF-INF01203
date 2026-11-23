@@ -2,14 +2,16 @@
 /** Tamanho da tabela hash usada pelo projeto */
 #define TAMANHO_HASH 51
 #include <stdbool.h>
+#include <string.h>
 #include "../cliente.h"
+#include "lista_receita.h"
 
 // Pelo mesmo motivo didático, será usado o hash por divisão, garantindo uma chance um pouco maior que as outras funções de ocorrência de colisões.
 // Adotaremos o tratamento de colisões com o encadeamento separado (chaining)
 
 typedef struct NoHash {
     int chave; /**< Chave usada para localizar o nó */
-    int valor; /**< Valor armazenado no nó */
+    ListaReceita valor; /**< Lista de ingredientes armazenada no nó */
     struct NoHash *prox; /**< Próximo nó da cadeia de colisões */
 } NoHash;
 
@@ -32,17 +34,19 @@ void inicializarHash(TabelaHash *t);
  * @brief Insere um par chave-valor na tabela hash.
  * @param[in,out] t Tabela hash que receberá o elemento
  * @param[in] chave Chave do elemento
- * @param[in] valor Valor associado à chave
+ * @param[in] valor Valor associado à chave, lista de caracteres
+ * @return true houve colisao
+ * @return false nao houve colisao
  */
-void inserirHash(TabelaHash *t, int chave, int valor); 
+bool inserirHash(TabelaHash *t, int chave, const ListaReceita *valor); 
 
 /**
  * @brief Busca o valor associado a uma chave.
  * @param[in] t Tabela hash consultada
  * @param[in] chave Chave procurada
- * @return Valor associado à chave, ou 0 se ela não for encontrada
+ * @return Ponteiro para o inicio de uma lista encadeada de caracteres, NULL se nao for encontrada
  */
-int buscarHash(TabelaHash *t, int chave);
+NodoLista* buscarHash(TabelaHash *t, int chave);
 
 /**
  * @brief Remove da tabela hash o elemento associado à chave.
