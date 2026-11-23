@@ -21,7 +21,7 @@ Texture2D bancada_tabua;
 Texture2D fogao;
 Texture2D mochila;
 static bool estoque_aberto;
-static int pagina_estoque;
+static int scroll_estoque;
 enum { NUMERO_ALIMENTOS_ESTOQUE = 12 };
 enum {
     NUMERO_CLIENTES = 6,
@@ -549,6 +549,21 @@ void desenha_paciencia_cliente(const Jogo *jogo)
         };
         Color cor = paciencia > 5 ? GREEN : paciencia > 2 ? ORANGE : RED;
         DrawRectangleRec(preenchimento, cor);
+
+        /* 7: turnos restantes/total junto à barra */
+        char texto_paciencia[16];
+        snprintf(texto_paciencia, sizeof(texto_paciencia), "%d/%d",
+                 paciencia, paciencia_maxima);
+        Vector2 tamanho_paciencia =
+            MeasureTextEx(fonte_jogo, texto_paciencia, 15.0f, ESPACO_FONTE);
+        Rectangle fundo_paciencia = {
+            barra.x + barra.width + 6.0f, barra.y + 4.0f,
+            tamanho_paciencia.x + 10.0f, tamanho_paciencia.y + 8.0f};
+        DrawRectangleRec(fundo_paciencia, (Color){245, 245, 245, 210});
+        DrawTextEx(fonte_jogo, texto_paciencia,
+                   (Vector2){fundo_paciencia.x + 5.0f,
+                             fundo_paciencia.y + 4.0f},
+                   15.0f, ESPACO_FONTE, BLACK);
     }
 
     DrawRectangleLinesEx(barra, 2.0f, BLACK);
@@ -595,7 +610,7 @@ void anda_fila(Jogo *jogo)
 
 void desenha_entrega_pedido(Jogo *jogo)
 {
-    if (jogo == NULL ||
+    if (jogo == NULL || jogo->saindo_partida ||
         !jogo->jogador.pedido_atual.pedido_pronto)
         return;
 
@@ -626,6 +641,41 @@ void desenha_entrega_pedido(Jogo *jogo)
 
     if (IsKeyPressed(KEY_E))
         jogo->jogador.pedido_atual.pedido_entregue = true;
+}
+
+/* quantidade rastreada em estoque de um ingrediente (-1 = ilimitado/nao rastreado) */
+static int quantidade_em_estoque(const Jogo *jogo, char ingrediente)
+{
+    for (int j = 0; j < MAXIMO_PERENES; j++) {
+        if (jogo->jogador.estoque_perenes[j].alimento == ingrediente)
+            return jogo->jogador.estoque_perenes[j].quantidade;
+    }
+    for (int j = 0; j < QUANTIDADE_ALIMENTOS_PERECIVEIS; j++) {
+        if (jogo->jogador.heap_estoque[j].alimento == ingrediente)
+            return jogo->jogador.heap_estoque[j].tamanho_heap;
+    }
+    return -1;
+}
+
+/* badge discreto de quantidade (canto superior esquerdo; "9+" acima de 9;
+   nao desenha nada quando a quantidade e 0 ou ilimitada) */
+static void desenha_badge_quantidade(Rectangle retangulo_opcao, int quantidade)
+{
+    if (quantidade <= 0)
+        return;
+
+    char texto[8];
+    snprintf(texto, sizeof(texto), quantidade > 9 ? "9+" : "%d", quantidade);
+    Vector2 centro = {
+        retangulo_opcao.x + 8.0f,
+        retangulo_opcao.y + 8.0f
+    };
+    DrawCircleV(centro, 9.0f, DARKGREEN);
+    Vector2 tamanho = MeasureTextEx(fonte_jogo, texto, 10.0f, 0.0f);
+    DrawTextEx(fonte_jogo, texto,
+               (Vector2){centro.x - tamanho.x / 2.0f,
+                         centro.y - tamanho.y / 2.0f},
+               10.0f, 0.0f, RAYWHITE);
 }
 
 void desenha_equipamentos(Jogo * jogo){
@@ -783,7 +833,24 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
                 tamanho_opcao
             };
 
+            /* disponível = ilimitado (pão/ketchup/mostarda), perene com estoque
+               ou perecível com unidade no heap — indisponível fica esmaecido */
+            bool disponivel = i <= 2;
+            if (!disponivel) {
+                char ingrediente = simbolos_bancada[i];
+                for (int j = 0; j < MAXIMO_PERENES && !disponivel; j++) {
+                    if (jogo->jogador.estoque_perenes[j].alimento == ingrediente &&
+                        jogo->jogador.estoque_perenes[j].quantidade > 0)
+                        disponivel = true;
+                }
+                for (int j = 0; j < QUANTIDADE_ALIMENTOS_PERECIVEIS && !disponivel; j++) {
+                    if (jogo->jogador.heap_estoque[j].alimento == ingrediente &&
+                        jogo->jogador.heap_estoque[j].tamanho_heap > 0)
+                        disponivel = true;
+                }
+            }
             bool opcao_em_foco =
+                disponivel &&
                 CheckCollisionPointRec(GetMousePosition(), retangulo_opcao);
             DrawRectangleRec(retangulo_opcao,
                              opcao_em_foco ? (Color){255, 160, 160, 255} : WHITE);
@@ -800,11 +867,17 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
             DrawTexturePro(textura,
                            (Rectangle){0, 0, (float)textura.width,
                                        (float)textura.height},
-                           destino, (Vector2){0, 0}, 0.0f, WHITE);
+                           destino, (Vector2){0, 0}, 0.0f,
+                           disponivel ? WHITE : (Color){170, 170, 170, 90});
 
-            if (opcao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                // Verificação para saber se esse item está no estoque
-                bool ta_no_estoque = i == 0 || i == 1 || i == 2;
+            desenha_badge_quantidade(retangulo_opcao,
+                                     quantidade_em_estoque(jogo,
+                                                           simbolos_bancada[i]));
+
+            if (opcao_em_foco && !jogo->saindo_partida &&
+                IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                // disponivel já reflete o estoque (ilimitados/perenes/perecíveis)
+                bool ta_no_estoque = disponivel;
 
                 if (!ta_no_estoque) {
                     char ingrediente = simbolos_bancada[i];
@@ -853,7 +926,8 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
             ESPACO_FONTE,
             BLACK);
 
-        if (botao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (botao_em_foco && !jogo->saindo_partida &&
+            IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             jogo->jogador.pedido_atual.opcao = REMOVE;
             jogo->equipamentos[BANCADA].foi_utilizado = true;
         }
@@ -940,7 +1014,36 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
                        (Rectangle){0, 0, (float)textura.width, (float)textura.height},
                        destino, (Vector2){0, 0}, 0.0f, WHITE);
 
-        if (opcao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        desenha_badge_quantidade(retangulo_opcao,
+                                 quantidade_em_estoque(jogo, simbolos[i]));
+
+        /* 3: turnos restantes até estragar, no balão do fogão (perecíveis) */
+        if (equipamento_destacado == FOGAO) {
+            for (int j = 0; j < QUANTIDADE_ALIMENTOS_PERECIVEIS; j++) {
+                if (jogo->jogador.heap_estoque[j].alimento == simbolos[i] &&
+                    jogo->jogador.heap_estoque[j].tamanho_heap > 0) {
+                    int turnos_restantes =
+                        jogo->jogador.heap_estoque[j].validade_alimentos[0] -
+                        jogo->turno_atual;
+                    Vector2 centro_badge = {
+                        retangulo_opcao.x + retangulo_opcao.width - 9.0f,
+                        retangulo_opcao.y + 9.0f};
+                    DrawCircleV(centro_badge, 11.0f, MAROON);
+                    char texto_badge[16];
+                    snprintf(texto_badge, sizeof(texto_badge), "%d",
+                             turnos_restantes > 0 ? turnos_restantes : 0);
+                    Vector2 tamanho_badge =
+                        MeasureTextEx(fonte_jogo, texto_badge, 13.0f, 0.0f);
+                    DrawTextEx(fonte_jogo, texto_badge,
+                               (Vector2){centro_badge.x - tamanho_badge.x / 2.0f,
+                                         centro_badge.y - tamanho_badge.y / 2.0f},
+                               13.0f, 0.0f, RAYWHITE);
+                }
+            }
+        }
+
+        if (opcao_em_foco && !jogo->saindo_partida &&
+            IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             char alimento_escolhido = simbolos[i];
             jogo->equipamentos[equipamento_destacado].foi_utilizado = true;
             jogo->equipamentos[equipamento_destacado].alimento_preparado =
@@ -1010,29 +1113,67 @@ void desenha_alimentos_no_estoque(Rectangle retangulo_estoque, const Jogo* jogo)
     };
     Vector2 mouse = GetMousePosition();
 
-    if (IsMouseButtonPressed(0)) {
-        if (CheckCollisionPointRec(mouse, botao_cima)) {
-            pagina_estoque = 0;
-        } else if (CheckCollisionPointRec(mouse, botao_baixo)) {
-            pagina_estoque = 1;
-        } else if (CheckCollisionPointRec(mouse, trilho)) {
-            pagina_estoque = mouse.y < trilho.y + trilho.height / 2.0f ? 0 : 1;
+    /* rolagem contínua: roda do mouse, arrasto/clique no trilho e botões */
+    const int total_alimentos = 12;
+    const float passo_item = altura_alimento + espaco_alimento;
+    const float altura_util = retangulo_estoque.height - 2.0f * margem;
+    int visiveis = (int)((altura_util + espaco_alimento) / passo_item);
+    if (visiveis < 1)
+        visiveis = 1;
+    int scroll_max = total_alimentos - visiveis;
+    if (scroll_max < 0)
+        scroll_max = 0;
+    if (scroll_estoque > scroll_max)
+        scroll_estoque = scroll_max;
+    if (scroll_estoque < 0)
+        scroll_estoque = 0;
+
+    if (!jogo->saindo_partida &&
+        CheckCollisionPointRec(mouse, retangulo_estoque)) {
+        float roda = GetMouseWheelMove();
+        if (roda != 0.0f) {
+            scroll_estoque -= (int)roda * 3;
+            if (scroll_estoque < 0)
+                scroll_estoque = 0;
+            if (scroll_estoque > scroll_max)
+                scroll_estoque = scroll_max;
         }
     }
 
-    const int quantidade_alimentos = pagina_estoque == 0 ? 7 : 5;
-    const float altura_lista =
-        quantidade_alimentos * altura_alimento +
-        (quantidade_alimentos - 1) * espaco_alimento;
-    const float y_alimentos = retangulo_estoque.y +
-                              (retangulo_estoque.height - altura_lista) / 2.0f;
-    const float altura_indicador = 64.0f;
+    const float altura_indicador =
+        scroll_max > 0 ? trilho.height * (float)visiveis / total_alimentos
+                       : trilho.height;
+    float proporcao_indicador =
+        scroll_max > 0 ? (float)scroll_estoque / scroll_max : 0.0f;
     Rectangle indicador = {
         x_barra,
-        pagina_estoque == 0 ? trilho.y : trilho.y + trilho.height - altura_indicador,
+        trilho.y + (trilho.height - altura_indicador) * proporcao_indicador,
         largura_barra,
         altura_indicador
     };
+
+    if (!jogo->saindo_partida && IsMouseButtonDown(0) &&
+        CheckCollisionPointRec(mouse, trilho)) {
+        /* arrasto/clique no trilho: o indicador centraliza no clique */
+        float deslocamento = mouse.y - trilho.y - altura_indicador / 2.0f;
+        float alcance = trilho.height - altura_indicador;
+        float prop = alcance > 0.0f ? deslocamento / alcance : 0.0f;
+        if (prop < 0.0f)
+            prop = 0.0f;
+        else if (prop > 1.0f)
+            prop = 1.0f;
+        scroll_estoque = (int)(prop * scroll_max + 0.5f);
+    } else if (!jogo->saindo_partida && IsMouseButtonPressed(0)) {
+        if (CheckCollisionPointRec(mouse, botao_cima)) {
+            scroll_estoque -= 3;
+        } else if (CheckCollisionPointRec(mouse, botao_baixo)) {
+            scroll_estoque += 3;
+        }
+        if (scroll_estoque < 0)
+            scroll_estoque = 0;
+        if (scroll_estoque > scroll_max)
+            scroll_estoque = scroll_max;
+    }
 
     DrawRectangleRec(trilho, LIGHTGRAY);
     DrawRectangleRounded(botao_cima, 0.2f, 4, WHITE);
@@ -1051,14 +1192,18 @@ void desenha_alimentos_no_estoque(Rectangle retangulo_estoque, const Jogo* jogo)
         BLACK);
     DrawRectangleRounded(indicador, 0.3f, 4, GRAY);
 
-    for (int i = 0; i < quantidade_alimentos; i++) {
-        const int fim_ilimitados = 2;
-        const int fim_perenes = 8;
-        const int fim_pereciveis = 11;
-        const int indice_alimento = pagina_estoque * 7 + i;
+    const int fim_ilimitados = 2;
+    const int fim_perenes = 8;
+    BeginScissorMode((int)retangulo_estoque.x,
+                     (int)(retangulo_estoque.y + margem),
+                     (int)retangulo_estoque.width, (int)altura_util);
+    for (int i = 0; i < visiveis + 1; i++) {
+        const int indice_alimento = scroll_estoque + i;
+        if (indice_alimento >= total_alimentos)
+            break;
         Rectangle retangulo_alimento = {
             x_alimentos,
-            y_alimentos + i * (altura_alimento + espaco_alimento),
+            retangulo_estoque.y + margem + i * passo_item,
             largura_alimento,
             altura_alimento
         };
@@ -1088,14 +1233,33 @@ void desenha_alimentos_no_estoque(Rectangle retangulo_estoque, const Jogo* jogo)
         } else if (indice_alimento <= fim_perenes) {
             snprintf(quantia, sizeof(quantia), "%d",
                      jogo->jogador.estoque_perenes[indice_alimento - 3].quantidade);
-        } else if (indice_alimento <= fim_pereciveis) {
+        } else {
             snprintf(quantia, sizeof(quantia), "%d",
                      jogo->jogador.heap_estoque[indice_alimento - 9].tamanho_heap);
         }
         DrawTextEx(fonte_jogo, quantia,
                    (Vector2){x_texto, retangulo_alimento.y + 36.0f},
                    14.0f, 1.0f, DARKGRAY);
+
+        /* 3: turnos restantes até estragar, no inventário (perecíveis) */
+        if (indice_alimento >= 9 &&
+            jogo->jogador.heap_estoque[indice_alimento - 9].tamanho_heap > 0) {
+            int turnos_restantes =
+                jogo->jogador.heap_estoque[indice_alimento - 9].validade_alimentos[0] -
+                jogo->turno_atual;
+            char texto_validade[32];
+            snprintf(texto_validade, sizeof(texto_validade), "vence em %d",
+                     turnos_restantes > 0 ? turnos_restantes : 0);
+            Vector2 tamanho_validade =
+                MeasureTextEx(fonte_jogo, texto_validade, 13.0f, 1.0f);
+            DrawTextEx(fonte_jogo, texto_validade,
+                       (Vector2){retangulo_alimento.x + largura_alimento - 10.0f -
+                                     tamanho_validade.x,
+                                 retangulo_alimento.y + 38.0f},
+                       13.0f, 1.0f, MAROON);
+        }
     }
+    EndScissorMode();
 }
 
 void desenha_estoque(const Jogo* jogo)
@@ -1188,6 +1352,68 @@ static void define_paciencia_pela_dificuldade(Jogo *jogo)
     }
 }
 
+/* Saída voluntária (5.2): diálogo de confirmação dentro da partida (ESC). */
+static void desenha_confirmacao_saida(Jogo *jogo)
+{
+    DrawRectangle(0, 0, JANELA_LARGURA, JANELA_ALTURA, (Color){0, 0, 0, 150});
+
+    Rectangle painel = {
+        JANELA_LARGURA / 2.0f - 230.0f, JANELA_ALTURA / 2.0f - 100.0f,
+        460.0f, 200.0f};
+    DrawRectangleRounded(painel, 0.08f, 10, RAYWHITE);
+    DrawRectangleLinesEx(painel, 3.0f, BLACK);
+
+    desenha_texto_centralizado(fonte_jogo, "Sair da partida?",
+                               (Rectangle){painel.x, painel.y + 16.0f,
+                                           painel.width, 36.0f},
+                               TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+
+    Rectangle botao_continuar = {painel.x + 30.0f,
+                                 painel.y + painel.height - 64.0f,
+                                 180.0f, 44.0f};
+    Rectangle botao_sair = {painel.x + painel.width - 210.0f,
+                            painel.y + painel.height - 64.0f,
+                            180.0f, 44.0f};
+    DrawRectangleRounded(botao_continuar, 0.2f, 8, GRAY);
+    DrawRectangleLinesEx(botao_continuar, 2.0f, BLACK);
+    desenha_texto_centralizado(fonte_jogo, "Continuar", botao_continuar,
+                               TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+    DrawRectangleRounded(botao_sair, 0.2f, 8, MAROON);
+    DrawRectangleLinesEx(botao_sair, 2.0f, BLACK);
+    desenha_texto_centralizado(fonte_jogo, "Sair", botao_sair,
+                               TAMANHO_FONTE_TEXTO, ESPACO_FONTE, RAYWHITE);
+
+    /* o mesmo ESC que abriu o diálogo ainda está pressionado neste frame —
+       só habilita o cancelamento depois que a tecla for solta */
+    static bool esc_liberado = false;
+    if (!esc_liberado) {
+        if (IsKeyUp(KEY_ESCAPE))
+            esc_liberado = true;
+    } else if (IsKeyPressed(KEY_ESCAPE)) {
+        esc_liberado = false;
+        jogo->saindo_partida = false; /* ESC de novo: continua jogando */
+        return;
+    }
+    if (IsMouseButtonPressed(0)) {
+        Vector2 mouse_dialogo = GetMousePosition();
+        if (CheckCollisionPointRec(mouse_dialogo, botao_continuar)) {
+            jogo->saindo_partida = false;
+            esc_liberado = false;
+        } else if (CheckCollisionPointRec(mouse_dialogo, botao_sair)) {
+            /* encerramento por saída voluntária: registra relatório e vai ao
+               formulário (nome -> histórico -> relatório na tela -> menu) */
+            jogo->saindo_partida = false;
+            jogo->jogando = false;
+            jogo->fim_partida.nome[0] = '\0';
+            jogo->fim_partida.salvo = false;
+            jogo->fim_partida.relatorio_visivel = false;
+            metricas.hash_n = cache_pedidos.n;
+            medicoes_gravar_relatorio_em_arquivo("medicoes.log");
+            jogo->tela_atual = SAIDA_VOLUNTARIA;
+        }
+    }
+}
+
 static void processa_nome_fim_partida(Jogo *jogo)
 {
     int tamanho_nome = (int)strlen(jogo->fim_partida.nome);
@@ -1206,7 +1432,7 @@ static void processa_nome_fim_partida(Jogo *jogo)
         jogo->fim_partida.nome[tamanho_nome] = '\0';
     }
 
-    if (IsKeyPressed(KEY_ENTER) && tamanho_nome > 0 &&
+    if ((IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_KP_ENTER)) && tamanho_nome > 0 &&
         !jogo->fim_partida.salvo) {
         jogo->fim_partida.pontuacao = jogo->pontuacao;
         if (jogo->fim_partida.caminho_historico != NULL &&
@@ -1410,6 +1636,9 @@ void desenha_jogo(Jogo *jogo)
     case DERROTA:
         desenha_tela_derrota(jogo);
         break;
+    case SAIDA_VOLUNTARIA:
+        desenha_formulario_fim_partida(jogo, "PARTIDA ENCERRADA", SKYBLUE);
+        break;
     case MENU:
 
         DrawTexturePro(fundo,
@@ -1515,6 +1744,7 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
             jogo->fim_partida.relatorio_visivel = false;
+            jogo->saindo_partida = false;
             metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
@@ -1537,6 +1767,7 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
             jogo->fim_partida.relatorio_visivel = false;
+            jogo->saindo_partida = false;
             metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
@@ -1559,6 +1790,7 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
             jogo->fim_partida.relatorio_visivel = false;
+            jogo->saindo_partida = false;
             metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
@@ -1853,7 +2085,7 @@ void desenha_jogo(Jogo *jogo)
             112.0f
         };
         bool mochila_em_foco = CheckCollisionPointRec(GetMousePosition(), fundo_mochila);
-        if (mochila_em_foco && IsMouseButtonPressed(0)) {
+        if (!jogo->saindo_partida && mochila_em_foco && IsMouseButtonPressed(0)) {
             estoque_aberto = !estoque_aberto;
         }
         if (estoque_aberto) {
@@ -1880,6 +2112,10 @@ void desenha_jogo(Jogo *jogo)
     default:
         break;
     }
+
+    if ((jogo->tela_atual == RECEPCAO || jogo->tela_atual == COZINHA) &&
+        jogo->saindo_partida)
+        desenha_confirmacao_saida(jogo);
 }
 
 void descarrega_assets(void)

@@ -260,5 +260,6 @@ typedef enum {
     RECEPCAO = 4, /**< Representação da tela da recepção */
     COZINHA = 5, /**< Representação da tela da cozinha */
     VITORIA = 6, /**< Representação da tela de vitória */
-    DERROTA = 7 /**< Representação da tela de derrota */
+    DERROTA = 7, /**< Representação da tela de derrota */
+    SAIDA_VOLUNTARIA = 8 /**< Representação da tela de saída voluntária da partida */
  } TelaAtual;

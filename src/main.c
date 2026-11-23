@@ -94,6 +94,7 @@ int main(int argc, char **argv)
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(JANELA_LARGURA, JANELA_ALTURA, "Dado Burger");
+    SetExitKey(KEY_NULL); /* ESC controla a saída voluntária (5.2), não fecha a janela */
     SetWindowMinSize(JANELA_LARGURA / 2, JANELA_ALTURA / 2);
     SetTargetFPS(60);
 
@@ -124,38 +125,43 @@ int main(int argc, char **argv)
         case RECEPCAO:
         case COZINHA:
             meu_jogo.jogando = true;
-            atualiza_jogador(&meu_jogo);
-            atualiza_jogo(&meu_jogo);
-            if (meu_jogo.primeiro_cliente) {
-                inicializa_pedido_cliente(&meu_jogo);
-                meu_jogo.primeiro_cliente = false;
-            }
-
-            if (meu_jogo.jogador.pedido_atual.pedido_entregue) {
-                Cliente cliente_removido;
-                dequeueFila(&meu_jogo.fila_clientes, &cliente_removido);
-                meu_jogo.pontuacao++;
-                if (!estaVaziaFila(&meu_jogo.fila_clientes)) {
-                    meu_jogo.proximo_cliente = true;
+            if (IsKeyPressed(KEY_ESCAPE))
+                meu_jogo.saindo_partida = true;
+            if (!meu_jogo.saindo_partida) {
+                atualiza_jogador(&meu_jogo);
+                atualiza_jogo(&meu_jogo);
+                if (meu_jogo.primeiro_cliente) {
                     inicializa_pedido_cliente(&meu_jogo);
-                } else {
-                    meu_jogo.tela_atual = VITORIA;
+                    meu_jogo.primeiro_cliente = false;
+                }
+
+                if (meu_jogo.jogador.pedido_atual.pedido_entregue) {
+                    Cliente cliente_removido;
+                    dequeueFila(&meu_jogo.fila_clientes, &cliente_removido);
+                    meu_jogo.pontuacao++;
+                    if (!estaVaziaFila(&meu_jogo.fila_clientes)) {
+                        meu_jogo.proximo_cliente = true;
+                        inicializa_pedido_cliente(&meu_jogo);
+                    } else {
+                        meu_jogo.tela_atual = VITORIA;
+                        meu_jogo.jogando = false;
+                        metricas.hash_n = cache_pedidos.n;
+                        medicoes_gravar_relatorio_em_arquivo("medicoes.log");
+                    }
+                }
+
+                if (!estaVaziaFila(&meu_jogo.fila_clientes) &&
+                    meu_jogo.fila_clientes.frente->cliente.paciencia_atual <= 0) {
+                    meu_jogo.tela_atual = DERROTA;
                     meu_jogo.jogando = false;
                     metricas.hash_n = cache_pedidos.n;
                     medicoes_gravar_relatorio_em_arquivo("medicoes.log");
                 }
             }
-
-            if (!estaVaziaFila(&meu_jogo.fila_clientes) &&
-                meu_jogo.fila_clientes.frente->cliente.paciencia_atual <= 0) {
-                meu_jogo.tela_atual = DERROTA;
-                meu_jogo.jogando = false;
-                metricas.hash_n = cache_pedidos.n;
-                medicoes_gravar_relatorio_em_arquivo("medicoes.log");
-            }
             break;
         case VITORIA:
         case DERROTA:
+        case SAIDA_VOLUNTARIA:
             break;
         default:
             break;
