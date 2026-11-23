@@ -96,6 +96,7 @@ typedef struct {
     int pontuacao; /**< Pontuacao obtida pelo jogador - numero de clientes atendidos até o momento */
     TelaAtual tela_atual; /**< Tela atual que o jogo está apresentando */
     bool jogando; /**< Indica se uma partida está em andamento */
+    bool saindo_partida; /**< Diálogo de saída voluntária aberto: congela o gameplay */
     float tempo; /**< Tempo decorrido na partida */
     Mapa mapa[NUMERO_MAPAS]; /**< Mapas da partida: recepcao e cozinha */
     bool proximo_cliente; /**< Indica se é para a fila andar/viro proximo cliente */

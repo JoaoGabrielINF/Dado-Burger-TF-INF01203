@@ -10,6 +10,10 @@ Entradas carregadas:             13
 -- Ordenacao do historico (ao acessar Historico) --
 Tamanho:                         13 entradas
 Merge Sort                       0.000000 s
+Tempo de carregamento:           0.494000 s
+
+-- Historico: carregamento --
+Entradas carregadas:             100005
 
 === RELATORIO DE DESEMPENHO ===
 
@@ -27,13 +31,24 @@ Media de comparacoes por busca:  19.00
 Tempo total acumulado:           0.000000 s
 -- Tabela hash --
 Tamanho (m):                     51
+Tempo de carregamento:           0.494000 s
+-- Historico: carregamento --
+Entradas carregadas:             100005
+-- AVL: buscas durante a partida --
+Total de buscas:                 1
+Total de comparacoes:            20
+Media de comparacoes por busca:  20.00
+Tempo total acumulado:           0.000000 s
+-- Tabela hash --
+Tamanho (m):                     53
 Entradas ocupadas (n):           1
 Fator de carga (lambda):         0.02
 Total de hits:                   0
 Total de misses:                 1
 Taxa de acerto:                  0.0%
 Total de colisoes:               0
--- Ordenacao do historico --
-Tamanho:                         13 entradas
-Merge Sort                       0.000000 s
 ================================
+-- Ordenacao do historico (ao acessar Historico) --
+Tamanho:                         100006 entradas
+Merge Sort                       0.023000 s
+
