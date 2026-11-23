@@ -64,3 +64,15 @@ int tamanhoFila(const FilaClientes *f) {
 
     return contador;
 }
+
+void esvaziaFila(FilaClientes *f){
+    NodoFila *aux = f->frente;
+    NodoFila *ant;
+    for(int i = 0; i < MAX_CLIENTES_FILA; i++){
+        ant = aux;
+        aux = aux->prox;
+        free(ant);
+    }
+    f->frente = NULL;
+    f->final = NULL;
+}

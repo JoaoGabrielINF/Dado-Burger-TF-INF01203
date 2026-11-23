@@ -1,4 +1,5 @@
 #include "heap_estoque.h"
+#include <stdio.h>
 
 void inicializaHeap(HeapEstoque* heap){
     heap->tamanho_heap = 0;
@@ -50,9 +51,15 @@ bool removerHeap(HeapEstoque *heap, char* alimento){
     if(heap->tamanho_heap <= 0){
         return false;
     }
-    *alimento = heap->validade_alimentos[0];
-    heap->validade_alimentos[0] = heap->validade_alimentos[heap->tamanho_heap - 1];
+
+    *alimento = heap->alimento; 
     heap->tamanho_heap--;
+    if(heap->tamanho_heap == 0){
+        *alimento = heap->alimento;
+        heap->validade_alimentos[0] = 0;
+        return true;
+    }
+    heap->validade_alimentos[0] = heap->validade_alimentos[heap->tamanho_heap];
     heapify(heap->validade_alimentos, heap->tamanho_heap, 0);
     return true;
 }
@@ -60,6 +67,8 @@ bool removerHeap(HeapEstoque *heap, char* alimento){
 bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, char *alimento){
     if(heap->validade_alimentos[0] == turno_atual){
         while(heap->validade_alimentos[0] == turno_atual){
+            printf("[%d]", heap->validade_alimentos[0]);
+            printf("  |  [%d]", turno_atual);
             removerHeap(heap, alimento);
         }
         return true;

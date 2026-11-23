@@ -6,8 +6,16 @@
 #include "../core/dados.h"
 #include "metricas.h"
 
+/**
+ * @brief Inicializa os clientes padrão da fila.
+ * @param[in,out] jogo Estado do jogo cuja fila será preenchida.
+ */
 void inicializa_clientes(Jogo *jogo);
 
+/**
+ * @brief Inicializa os valores padrão de uma partida.
+ * @param[in,out] jogo Estado do jogo a inicializar.
+ */
 void inicializa_jogo(Jogo *jogo);
 
 /**
@@ -36,13 +44,34 @@ void gerencia_turnos(Jogo* jogo);
 
 /**
  * @brief Função responsável pelo gerenciamento de paciência dos clientes
- * @param jogo  Estado atual do jogo para fazer o gerenciamento de paciência
+ * @param jogo Estado atual do jogo para fazer o gerenciamento de paciência
  */
 void gerencia_paciencia(Jogo* jogo);
 
 
 /**
  * @brief Verifica se um item chegou na validade. Se sim, retira ele to estoque
- * @param jogo Estaod atual do jogo para modificar a heap
+ * @param jogo Estado atual do jogo para modificar a heap
  */
 void gerencia_estoque_pereciveis(Jogo* jogo);
+
+
+/**
+ * @brief Reinicia o jogo após uma partida se encerrar
+ * @param jogo estado atual do jogo
+ */
+ 
+void reinicia_jogo(Jogo *jogo);
+
+/**
+ * @brief Une todas as funções anteriores envolvendo gerenciamento de comida e paciência em uma função
+ * @param jogo Estado atual do jogo para aplicar de argumento nas funções
+ */
+void atualiza_jogo(Jogo* jogo);
+
+/**
+ * @brief Compara os ingredientes da pilha de hamburger e da lista de receita
+ * @param pilha ponteiro para a pilha de hamburger
+ * @param lista ponteiro para a lista de receita
+ */
+void compara_lista_e_pilha(PilhaHamburger *pilha, const ListaReceita *lista);

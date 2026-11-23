@@ -9,7 +9,7 @@ typedef struct {
     double tempo_carregamento; /** tempo de carregamento em segundos */
 
     // Histórico: carregamento
-    int entradas_historico;    /** registros lidos do argv[2] (retorno de lerHistorico) */
+    int entradas_historico;    /** registros lidos do argv[2] (retorno de ler_historico) */
 
     // AVL: buscas durante a partida
     int total_buscas;          /** buscas feitas na AVL, só quando dá MISS no cache (4.3 no PDF da atv) */

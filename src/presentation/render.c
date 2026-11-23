@@ -5,6 +5,7 @@
 #include "../core/time/time.h"
 #include "../core/metricas.h"
 #include "../io/medicoes.h"
+#include "../io/historico_io.h"
 #include <stdio.h>
 
 Texture2D fundo;
@@ -64,7 +65,7 @@ static const char *const nomes_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE] = {
 };
 static Texture2D texturas_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE];
 
-void carregaAssets(void)
+void carrega_assets(void)
 {
     jogador_frames = LoadTexture("assets/imagens/principal.png");
     recepcao = LoadTexture("assets/imagens/mapas/mapa_1.png");
@@ -84,7 +85,7 @@ void carregaAssets(void)
     }
 }
 
-bool coloreSeColide(Rectangle rec, Vector2 pos_mouse)
+bool colore_se_colide(Rectangle rec, Vector2 pos_mouse)
 {
     if (CheckCollisionPointRec(pos_mouse, rec))
     {
@@ -94,7 +95,7 @@ bool coloreSeColide(Rectangle rec, Vector2 pos_mouse)
     return false;
 }
 
-void desenhaTextoCentralizado(Font fonte, const char *texto, Rectangle ret,
+void desenha_texto_centralizado(Font fonte, const char *texto, Rectangle ret,
                               float tamanho, float espaco, Color cor)
 {
     Vector2 t = MeasureTextEx(fonte, texto, tamanho, espaco);
@@ -106,7 +107,7 @@ void desenhaTextoCentralizado(Font fonte, const char *texto, Rectangle ret,
     DrawTextEx(fonte, texto, pos, tamanho, espaco, cor);
 }
 
-static const char *nomeIngrediente(char ingrediente)
+static const char *nome_ingrediente(char ingrediente)
 {
     switch (ingrediente)
     {
@@ -126,7 +127,7 @@ static const char *nomeIngrediente(char ingrediente)
     }
 }
 
-void desenhaComanda(const ListaReceita *receita)
+void desenha_comanda(const ListaReceita *receita)
 {
     const float margem = 16.0f;
     const float largura = 240.0f;
@@ -161,16 +162,97 @@ void desenhaComanda(const ListaReceita *receita)
     int linha = 0;
     for (NodoLista *nodo = receita->ini; nodo != NULL; nodo = nodo->prox)
     {
-        DrawTextEx(fonte_jogo, nomeIngrediente(nodo->ingrediente),
+        DrawTextEx(fonte_jogo, nome_ingrediente(nodo->ingrediente),
                    (Vector2){comanda.x + 12.0f, comanda.y + altura_cabecalho + linha * altura_linha},
                    18.0f, ESPACO_FONTE, BLACK);
         linha++;
     }
 }
 
+static const char *nome_simbolo_hamburger(char ingrediente)
+{
+    switch (ingrediente) {
+    case PAO_SIMBOLO: return "Pao de cima";
+    case KETCHUP_SIMBOLO: return "Ketchup";
+    case MOSTARDA_SIMBOLO: return "Mostarda";
+    case PICLES_SIMBOLO: return "Picles";
+    case ALFACE_SIMBOLO: return "Alface";
+    case QUEIJO_SUICO_SIMBOLO: return "Queijo suico";
+    case QUEIJO_CHEDDAR_SIMBOLO: return "Queijo cheddar";
+    case CEBOLA_SIMBOLO: return "Cebola";
+    case TOMATE_SIMBOLO: return "Tomate";
+    case CARNE_SIMBOLO: return "Carne";
+    case OVO_FRITO_SIMBOLO: return "Ovo";
+    case BACON_SIMBOLO: return "Bacon";
+    default: return "";
+    }
+}
+
+void desenha_hamburger(Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+
+    Rectangle painel = {
+        272.0f,
+        JANELA_ALTURA - 16.0f - 220.0f,
+        240.0f,
+        220.0f
+    };
+
+    DrawRectangleRec(painel, RAYWHITE);
+    DrawRectangleLinesEx(painel, 2.0f, DARKGRAY);
+    DrawTextEx(fonte_jogo, "Hamburger",
+               (Vector2){painel.x + 8.0f, painel.y + 6.0f},
+               14.0f, 1.0f, BLACK);
+
+    const float altura_linha = 18.0f;
+    float texto_y = painel.y + painel.height - 30.0f;
+
+    DrawTextEx(fonte_jogo, "Pao de baixo",
+               (Vector2){painel.x + 8.0f, texto_y},
+               12.0f, 1.0f, BROWN);
+
+    typedef struct {
+        char ingrediente;
+        bool correto;
+    } CamadaHamburger;
+
+    CamadaHamburger camadas[9];
+    int quantidade = 0;
+    int indice = 0;
+    for (NodoPilha *nodo = jogo->jogador.pedido_atual.pilha_hamburger.topo;
+         nodo != NULL && quantidade < 9;
+         nodo = nodo->prox) {
+        camadas[indice].ingrediente = nodo->ingrediente;
+        camadas[indice].correto = nodo->ingrediente_correto;
+        indice++;
+        quantidade++;
+    }
+
+    bool todos_corretos = quantidade > 0;
+    texto_y -= altura_linha;
+
+    for (int i = quantidade - 1;
+         i >= 0 && texto_y >= painel.y + 28.0f;
+         i--) {
+        if (!camadas[i].correto)
+            todos_corretos = false;
+
+        DrawTextEx(fonte_jogo, nome_simbolo_hamburger(camadas[i].ingrediente),
+                   (Vector2){painel.x + 8.0f, texto_y},
+                   12.0f, 1.0f,
+                   camadas[i].correto ? GREEN : RED);
+        texto_y -= altura_linha;
+    }
+
+    jogo->jogador.pedido_atual.pedido_pronto = todos_corretos;
+}
+
+
 /* Desenha texto com quebra de linha por palavras dentro de largura_maxima.
    Devolve o numero de linhas desenhadas. */
-static int desenhaTextoQuebrado(Font fonte, const char *texto, float x, float y,
+static int desenha_texto_quebrado(Font fonte, const char *texto, float x, float y,
                                 float tamanho, float espaco, float passo,
                                 float largura_maxima, Color cor)
 {
@@ -218,7 +300,7 @@ static int desenhaTextoQuebrado(Font fonte, const char *texto, float x, float y,
     return linhas;
 }
 
-void determinaDirecao(Jogador *jogador)
+void determina_direcao(Jogador *jogador)
 {
     int dx = 0;
     int dy = 0;
@@ -259,7 +341,7 @@ void determinaDirecao(Jogador *jogador)
     }
 
 }
-void desenhaJogador(Jogador *jogador)
+void desenha_jogador(Jogador *jogador)
 {
     Rectangle retangulo_jogador = {
         jogador->posicao.x,
@@ -271,7 +353,7 @@ void desenhaJogador(Jogador *jogador)
 
     Vector2 centro = {TILE_SIZE / 2, TILE_SIZE / 2};
 
-    determinaDirecao(jogador);
+    determina_direcao(jogador);
     int comando = jogador->animacao.tipo;
     bool parado = !jogador->andando;
     /* Frames do sprite sheet (principal.png, 72x72, 16 colunas x 2 linhas):
@@ -429,6 +511,8 @@ void desenha_paciencia_cliente(const Jogo *jogo)
         TILE_SIZE / 3.0f,
         JANELA_ALTURA / 3.0f
     };
+
+    barra.y += barra.height / 2;
     DrawRectangleRec(barra, LIGHTGRAY);
 
     const NodoFila *frente = jogo->fila_clientes.frente;
@@ -505,7 +589,42 @@ void anda_fila(Jogo *jogo)
     }
 }
 
-void desenhaEquipamentos(const Jogo * jogo){
+void desenha_entrega_pedido(Jogo *jogo)
+{
+    if (jogo == NULL ||
+        !jogo->jogador.pedido_atual.pedido_pronto)
+        return;
+
+    Rectangle frente_balcao = {
+        23.0f * TILE_SIZE,
+        5.0f * TILE_SIZE,
+        2.0f * TILE_SIZE,
+        4.0f * TILE_SIZE
+    };
+
+    if (!CheckCollisionRecs(jogo->jogador.hitbox, frente_balcao))
+        return;
+
+    const NodoFila *cliente_frente = jogo->fila_clientes.frente;
+    if (cliente_frente == NULL)
+        return;
+
+    Rectangle tecla_e = {
+        cliente_frente->cliente.posicao.x - 16.0f,
+        cliente_frente->cliente.posicao.y - 48.0f,
+        32.0f,
+        32.0f
+    };
+    DrawRectangleRec(tecla_e, RAYWHITE);
+    DrawRectangleLinesEx(tecla_e, 2.0f, DARKGRAY);
+    desenha_texto_centralizado(fonte_jogo, "E", tecla_e,
+                             20.0f, ESPACO_FONTE, BLACK);
+
+    if (IsKeyPressed(KEY_E))
+        jogo->jogador.pedido_atual.pedido_entregue = true;
+}
+
+void desenha_equipamentos(Jogo * jogo){
     int equipamento_destacado = -1;
     for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++) {
         if (CheckCollisionRecs(jogo->jogador.hitbox, jogo->equipamentos[i].hitbox)) {
@@ -528,7 +647,9 @@ void desenhaEquipamentos(const Jogo * jogo){
     DrawTexturePro(fogao,
                    (Rectangle){0, 0, (float)fogao.width, (float)fogao.height},
                    retangulo_fogao, (Vector2){0, 0}, 0.0f,
-                   equipamento_destacado == FOGAO ? tinta_destaque : WHITE);
+                   jogo->equipamentos[FOGAO].em_uso
+                       ? (Color){210, 255, 210, 255}
+                       : (equipamento_destacado == FOGAO ? tinta_destaque : WHITE));
 
     Rectangle retangulo_tabua = {
         jogo->equipamentos[TABUA].posicao_pixels.x,
@@ -551,6 +672,307 @@ void desenhaEquipamentos(const Jogo * jogo){
                    (Rectangle){0, 0, (float)bancada_normal.width, (float)bancada_normal.height},
                    retangulo_bancada, (Vector2){0, 0}, 0.0f,
                    equipamento_destacado == BANCADA ? tinta_destaque : WHITE);
+
+    desenha_opcoes_equipamentos(jogo);
+}
+
+void desenha_opcoes_equipamentos(Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+
+    if (jogo->equipamentos[FOGAO].em_uso) {
+        char texto_restante[16];
+        int restante =
+            jogo->equipamentos[FOGAO].turno_pronto - jogo->turno_atual;
+        if (restante < 0)
+            restante = 0;
+        snprintf(texto_restante, sizeof(texto_restante), "%d", restante);
+
+        const float tamanho = 24.0f;
+        Vector2 posicao = {
+            jogo->equipamentos[FOGAO].posicao_pixels.x +
+                jogo->equipamentos[FOGAO].hitbox.width / 2.0f - 8.0f,
+            jogo->equipamentos[FOGAO].posicao_pixels.y - 30.0f
+        };
+
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx != 0 || dy != 0) {
+                    Vector2 posicao_contorno = {
+                        posicao.x + dx,
+                        posicao.y + dy
+                    };
+                    DrawTextEx(fonte_jogo, texto_restante, posicao_contorno,
+                               tamanho, ESPACO_FONTE, BLACK);
+                }
+            }
+        }
+        DrawTextEx(fonte_jogo, texto_restante, posicao,
+                   tamanho, ESPACO_FONTE, YELLOW);
+    }
+
+    int equipamento_destacado = -1;
+    for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++) {
+        if (CheckCollisionRecs(jogo->jogador.hitbox, jogo->equipamentos[i].hitbox)) {
+            equipamento_destacado = i;
+            break;
+        }
+    }
+
+    if (equipamento_destacado == BANCADA) {
+        const float tamanho_opcao = 36.0f;
+        const float espacamento = 4.0f;
+        const float margem = 7.0f;
+        const int colunas = 4;
+        const int linhas = 3;
+        const float largura_ingredientes =
+            colunas * tamanho_opcao + (colunas - 1) * espacamento + 2.0f * margem;
+        const float altura =
+            linhas * tamanho_opcao + (linhas - 1) * espacamento + 2.0f * margem;
+
+        const EquipamentoCozinha *bancada =
+            &jogo->equipamentos[BANCADA];
+        float x = bancada->posicao_pixels.x +
+                  bancada->hitbox.width + 12.0f;
+        float y = bancada->posicao_pixels.y - altura - 8.0f;
+
+        if (x < 4.0f)
+            x = 4.0f;
+        if (x + largura_ingredientes > JANELA_LARGURA - 4.0f)
+            x = JANELA_LARGURA - 4.0f - largura_ingredientes;
+        if (y < 4.0f)
+            y = 4.0f;
+
+        Rectangle fundo_ingredientes = {
+            x, y, largura_ingredientes, altura
+        };
+        DrawRectangleRec(fundo_ingredientes, RAYWHITE);
+        DrawRectangleLinesEx(fundo_ingredientes, 2.0f, DARKGRAY);
+
+        static const int ingredientes_bancada[] = {
+            0, 1, 2, 3,
+            4, 5, 6, 7,
+            8, 9, 10, 11
+        };
+        static const char simbolos_bancada[] = {
+            PAO_SIMBOLO,
+            KETCHUP_SIMBOLO,
+            MOSTARDA_SIMBOLO,
+            PICLES_SIMBOLO,
+            ALFACE_SIMBOLO,
+            QUEIJO_SUICO_SIMBOLO,
+            QUEIJO_CHEDDAR_SIMBOLO,
+            CEBOLA_SIMBOLO,
+            TOMATE_SIMBOLO,
+            CARNE_SIMBOLO,
+            OVO_FRITO_SIMBOLO,
+            BACON_SIMBOLO
+        };
+        for (int i = 0; i < 12; i++) {
+            int coluna = i % colunas;
+            int linha = i / colunas;
+            Rectangle retangulo_opcao = {
+                x + margem + coluna * (tamanho_opcao + espacamento),
+                y + margem + linha * (tamanho_opcao + espacamento),
+                tamanho_opcao,
+                tamanho_opcao
+            };
+
+            bool opcao_em_foco =
+                CheckCollisionPointRec(GetMousePosition(), retangulo_opcao);
+            DrawRectangleRec(retangulo_opcao,
+                             opcao_em_foco ? (Color){255, 160, 160, 255} : WHITE);
+            DrawRectangleLinesEx(retangulo_opcao, 1.0f, LIGHTGRAY);
+
+            Texture2D textura =
+                texturas_alimentos_estoque[ingredientes_bancada[i]];
+            Rectangle destino = {
+                retangulo_opcao.x + 3.0f,
+                retangulo_opcao.y + 3.0f,
+                retangulo_opcao.width - 6.0f,
+                retangulo_opcao.height - 6.0f
+            };
+            DrawTexturePro(textura,
+                           (Rectangle){0, 0, (float)textura.width,
+                                       (float)textura.height},
+                           destino, (Vector2){0, 0}, 0.0f, WHITE);
+
+            if (opcao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                // Verificação para saber se esse item está no estoque
+                bool ta_no_estoque = i == 0 || i == 1 || i == 2;
+
+                if (!ta_no_estoque) {
+                    char ingrediente = simbolos_bancada[i];
+
+                    for (int j = 0; j < MAXIMO_PERENES && !ta_no_estoque; j++) {
+                        if (jogo->jogador.estoque_perenes[j].alimento == ingrediente &&
+                            jogo->jogador.estoque_perenes[j].quantidade > 0) {
+                            ta_no_estoque = true;
+                        }
+                    }
+
+                    for (int j = 0; j < QUANTIDADE_ALIMENTOS_PERECIVEIS && !ta_no_estoque; j++) {
+                        if (jogo->jogador.heap_estoque[j].alimento == ingrediente &&
+                            jogo->jogador.heap_estoque[j].tamanho_heap > 0) {
+                            ta_no_estoque = true;
+                        }
+                    }
+                }
+                
+                if(ta_no_estoque){
+                jogo->jogador.pedido_atual.adicionar_pilha =
+                    simbolos_bancada[i];
+                jogo->jogador.pedido_atual.opcao = ADICIONA;
+                jogo->equipamentos[BANCADA].foi_utilizado = true;
+                }
+            }
+        }
+
+        Rectangle botao_remover = {
+            x,
+            y + altura + 8.0f,
+            largura_ingredientes,
+            32.0f
+        };
+        bool botao_em_foco =
+            CheckCollisionPointRec(GetMousePosition(), botao_remover);
+        DrawRectangleRec(
+            botao_remover,
+            botao_em_foco ? (Color){255, 160, 160, 255} : RAYWHITE);
+        DrawRectangleLinesEx(botao_remover, 2.0f, DARKGRAY);
+        desenha_texto_centralizado(
+            fonte_jogo,
+            "Remover ingrediente",
+            botao_remover,
+            14.0f,
+            ESPACO_FONTE,
+            BLACK);
+
+        if (botao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            jogo->jogador.pedido_atual.opcao = REMOVE;
+            jogo->equipamentos[BANCADA].foi_utilizado = true;
+        }
+
+        return;
+    }
+
+    if (equipamento_destacado != FOGAO &&
+        equipamento_destacado != TABUA)
+        return;
+
+    if (equipamento_destacado == FOGAO &&
+        jogo->equipamentos[FOGAO].em_uso) {
+        return;
+    }
+
+    static const int opcoes_fogao[] = {10, 11, 9};
+    static const int opcoes_tabua[] = {3, 4, 5, 6, 7, 8};
+    static const char simbolos_fogao[] =
+        {OVO_FRITO_SIMBOLO, BACON_SIMBOLO, CARNE_SIMBOLO};
+    static const char simbolos_tabua[] =
+        {PICLES_SIMBOLO, ALFACE_SIMBOLO, QUEIJO_SUICO_SIMBOLO,
+         QUEIJO_CHEDDAR_SIMBOLO, CEBOLA_SIMBOLO, TOMATE_SIMBOLO};
+    const int *opcoes;
+    const char *simbolos;
+    int quantidade;
+
+    if (equipamento_destacado == FOGAO) {
+        opcoes = opcoes_fogao;
+        simbolos = simbolos_fogao;
+        quantidade = 3;
+    } else {
+        opcoes = opcoes_tabua;
+        simbolos = simbolos_tabua;
+        quantidade = 6;
+    }
+
+    const float tamanho_opcao = 36.0f;
+    const float espacamento = 4.0f;
+    const float margem = 6.0f;
+    const float largura =
+        quantidade * tamanho_opcao + (quantidade - 1) * espacamento + 2.0f * margem;
+    const float altura = tamanho_opcao + 2.0f * margem;
+
+    const EquipamentoCozinha *equipamento =
+        &jogo->equipamentos[equipamento_destacado];
+    float x = equipamento->posicao_pixels.x +
+              equipamento->hitbox.width / 2.0f - largura / 2.0f;
+    float y = equipamento->posicao_pixels.y - altura - 8.0f;
+
+    if (x < 4.0f)
+        x = 4.0f;
+    if (x + largura > JANELA_LARGURA - 4.0f)
+        x = JANELA_LARGURA - 4.0f - largura;
+    if (y < 4.0f)
+        y = 4.0f;
+
+    Rectangle fundo = {x, y, largura, altura};
+    DrawRectangleRec(fundo, RAYWHITE);
+    DrawRectangleLinesEx(fundo, 2.0f, DARKGRAY);
+
+    for (int i = 0; i < quantidade; i++) {
+        Rectangle retangulo_opcao = {
+            x + margem + i * (tamanho_opcao + espacamento),
+            y + margem,
+            tamanho_opcao,
+            tamanho_opcao
+        };
+
+        bool opcao_em_foco =
+            CheckCollisionPointRec(GetMousePosition(), retangulo_opcao);
+        DrawRectangleRec(retangulo_opcao,
+                         opcao_em_foco ? (Color){255, 160, 160, 255} : WHITE);
+        DrawRectangleLinesEx(retangulo_opcao, 1.0f, LIGHTGRAY);
+
+        Texture2D textura = texturas_alimentos_estoque[opcoes[i]];
+        Rectangle destino = {
+            retangulo_opcao.x + 4.0f,
+            retangulo_opcao.y + 4.0f,
+            retangulo_opcao.width - 8.0f,
+            retangulo_opcao.height - 8.0f
+        };
+        DrawTexturePro(textura,
+                       (Rectangle){0, 0, (float)textura.width, (float)textura.height},
+                       destino, (Vector2){0, 0}, 0.0f, WHITE);
+
+        if (opcao_em_foco && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            char alimento_escolhido = simbolos[i];
+            jogo->equipamentos[equipamento_destacado].foi_utilizado = true;
+            jogo->equipamentos[equipamento_destacado].alimento_preparado =
+                alimento_escolhido;
+        }
+    }
+
+}
+
+void desenha_turno(const Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+
+    char texto_turno[32];
+    snprintf(texto_turno, sizeof(texto_turno), "Turno: %d",
+             jogo->turno_atual);
+
+    const float tamanho = 24.0f;
+    Vector2 posicao = {16.0f, 16.0f};
+
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (dx != 0 || dy != 0) {
+                Vector2 posicao_contorno = {
+                    posicao.x + dx,
+                    posicao.y + dy
+                };
+                DrawTextEx(fonte_jogo, texto_turno, posicao_contorno,
+                           tamanho, ESPACO_FONTE, BLACK);
+            }
+        }
+    }
+
+    DrawTextEx(fonte_jogo, texto_turno, posicao,
+               tamanho, ESPACO_FONTE, YELLOW);
 }
 
 void desenha_alimentos_no_estoque(Rectangle retangulo_estoque, const Jogo* jogo)
@@ -712,9 +1134,9 @@ static void historico_reordenar(void)
     if (copia.tamanho > 0)
     {
         if (historico_por_pontuacao)
-            mergeSortPontuacao(copia.dados, copia.tamanho);
+            merge_sort_pontuacao(copia.dados, copia.tamanho);
         else
-            mergeSortAlfabetico(copia.dados, copia.tamanho);
+            merge_sort_alfabetico(copia.dados, copia.tamanho);
     }
     double tempo = timer_parar(&t);
 
@@ -738,7 +1160,136 @@ static void historico_reordenar(void)
     pagina_historico = 0;
 }
 
-void desenhaJogo(Jogo *jogo)
+static void define_paciencia_pela_dificuldade(Jogo *jogo)
+{
+    int paciencia_maxima;
+
+    switch (jogo->dificuldade) {
+    case MEDIO:
+        paciencia_maxima = PACIENCIA_MAXIMA_MEDIO;
+        break;
+    case DIFICIL:
+        paciencia_maxima = PACIENCIA_MAXIMA_DIFICIL;
+        break;
+    case FACIL:
+    default:
+        paciencia_maxima = PACIENCIA_MAXIMA_FACIL;
+        break;
+    }
+
+    for (NodoFila *nodo = jogo->fila_clientes.frente;
+         nodo != NULL;
+         nodo = nodo->prox) {
+        nodo->cliente.paciencia_atual = paciencia_maxima;
+    }
+}
+
+static void processa_nome_fim_partida(Jogo *jogo)
+{
+    int tamanho_nome = (int)strlen(jogo->fim_partida.nome);
+    int caractere;
+
+    while ((caractere = GetCharPressed()) != 0) {
+        if (tamanho_nome < 20 && caractere >= 32 && caractere != 127) {
+            jogo->fim_partida.nome[tamanho_nome] = (char)caractere;
+            tamanho_nome++;
+            jogo->fim_partida.nome[tamanho_nome] = '\0';
+        }
+    }
+
+    if (IsKeyPressed(KEY_BACKSPACE) && tamanho_nome > 0) {
+        tamanho_nome--;
+        jogo->fim_partida.nome[tamanho_nome] = '\0';
+    }
+
+    if (IsKeyPressed(KEY_ENTER) && tamanho_nome > 0 &&
+        !jogo->fim_partida.salvo) {
+        jogo->fim_partida.pontuacao = jogo->pontuacao;
+        if (jogo->fim_partida.caminho_historico != NULL &&
+            salvar_partida_historico(jogo->fim_partida.caminho_historico,
+                                   jogo->fim_partida.nome,
+                                   jogo->fim_partida.pontuacao)) {
+            jogo->fim_partida.salvo = true;
+            inserir(&historico_partidas,
+                    criarRegistro(tamanho(&historico_partidas),
+                                  jogo->fim_partida.nome,
+                                  jogo->fim_partida.pontuacao),
+                    tamanho(&historico_partidas));
+            historico_reordenar();
+            jogo->tela_atual = MENU;
+            jogo->jogando = false;
+        }
+    }
+}
+
+static void desenha_formulario_fim_partida(Jogo *jogo,
+                                            const char *titulo,
+                                            Color cor_titulo)
+{
+    DrawRectangle(0, 0, JANELA_LARGURA, JANELA_ALTURA, BLACK);
+
+    Vector2 tamanho_titulo =
+        MeasureTextEx(fonte_jogo, titulo, TAMANHO_FONTE_TITULO, ESPACO_FONTE);
+    Vector2 posicao_titulo = {
+        (JANELA_LARGURA - tamanho_titulo.x) / 2.0f,
+        JANELA_ALTURA * 0.18f
+    };
+
+    for (int dx = -2; dx <= 2; dx++) {
+        for (int dy = -2; dy <= 2; dy++) {
+            if (dx != 0 || dy != 0) {
+                DrawTextEx(fonte_jogo, titulo,
+                           (Vector2){posicao_titulo.x + dx, posicao_titulo.y + dy},
+                           TAMANHO_FONTE_TITULO, ESPACO_FONTE, DARKGRAY);
+            }
+        }
+    }
+    DrawTextEx(fonte_jogo, titulo, posicao_titulo,
+               TAMANHO_FONTE_TITULO, ESPACO_FONTE, cor_titulo);
+
+    processa_nome_fim_partida(jogo);
+
+    Rectangle campo = {
+        JANELA_LARGURA * 0.30f,
+        JANELA_ALTURA * 0.48f,
+        JANELA_LARGURA * 0.40f,
+        64.0f
+    };
+    DrawRectangleRounded(campo, 0.12f, 8, RAYWHITE);
+    DrawRectangleRoundedLinesEx(campo, 0.12f, 8, 3.0f, GRAY);
+    desenha_texto_centralizado(fonte_jogo,
+                             strlen(jogo->fim_partida.nome) > 0
+                                 ? jogo->fim_partida.nome
+                                 : "Digite seu nome",
+                             campo,
+                             TAMANHO_FONTE_TEXTO,
+                             ESPACO_FONTE,
+                             BLACK);
+
+    const char *instrucao = "ENTER para salvar";
+    Vector2 tamanho_instrucao =
+        MeasureTextEx(fonte_jogo, instrucao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE);
+    DrawTextEx(fonte_jogo, instrucao,
+               (Vector2){(JANELA_LARGURA - tamanho_instrucao.x) / 2.0f,
+                         campo.y + campo.height + 24.0f},
+               TAMANHO_FONTE_TEXTO, ESPACO_FONTE, RAYWHITE);
+}
+
+void desenha_tela_vitoria(Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+    desenha_formulario_fim_partida(jogo, "VOCE VENCEU", GREEN);
+}
+
+void desenha_tela_derrota(Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+    desenha_formulario_fim_partida(jogo, "DERROTA", RED);
+}
+
+void desenha_jogo(Jogo *jogo)
 {
 
     // Declarar as constantes a serem usadas nos paineis do historico e como jogar
@@ -788,6 +1339,12 @@ void desenhaJogo(Jogo *jogo)
 
     switch (jogo->tela_atual)
     {
+    case VITORIA:
+        desenha_tela_vitoria(jogo);
+        break;
+    case DERROTA:
+        desenha_tela_derrota(jogo);
+        break;
     case MENU:
 
         DrawTexturePro(fundo,
@@ -822,25 +1379,25 @@ void desenhaJogo(Jogo *jogo)
         DrawRectangleRec(display_inicio, GREEN);
 
         DrawRectangleRec(botao_novo_jogo, RED);
-        if (coloreSeColide(botao_novo_jogo, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_novo_jogo, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = ESCOLHER_DIFICULDADE;
         }
-        desenhaTextoCentralizado(fonte_jogo, "Novo Jogo", botao_novo_jogo, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Novo Jogo", botao_novo_jogo, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         DrawRectangleRec(botao_como_jogar, RED);
-        if (coloreSeColide(botao_como_jogar, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_como_jogar, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = COMO_JOGAR;
         }
-        desenhaTextoCentralizado(fonte_jogo, "Como Jogar", botao_como_jogar, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Como Jogar", botao_como_jogar, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         DrawRectangleRec(botao_historico, RED);
-        if (coloreSeColide(botao_historico, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_historico, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = HISTORICO;
         }
-        desenhaTextoCentralizado(fonte_jogo, "Historico", botao_historico, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Historico", botao_historico, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         break;
 
@@ -877,35 +1434,53 @@ void desenhaJogo(Jogo *jogo)
         DrawRectangleRec(display_dificuldade, GREEN);
 
         DrawRectangleRec(botao_facil, RED);
-        if (coloreSeColide(botao_facil, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_facil, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = RECEPCAO;
+            jogo->jogando = true;
             jogo->dificuldade = FACIL;
+            jogo->pontuacao = 0;
+            jogo->fim_partida.nome[0] = '\0';
+            jogo->fim_partida.pontuacao = 0;
+            jogo->fim_partida.salvo = false;
+            define_paciencia_pela_dificuldade(jogo);
         }
-        desenhaTextoCentralizado(fonte_jogo, "Facil", botao_facil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Facil", botao_facil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         DrawRectangleRec(botao_medio, RED);
-        if (coloreSeColide(botao_medio, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_medio, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = RECEPCAO;
+            jogo->jogando = true;
             jogo->dificuldade = MEDIO;
+            jogo->pontuacao = 0;
+            jogo->fim_partida.nome[0] = '\0';
+            jogo->fim_partida.pontuacao = 0;
+            jogo->fim_partida.salvo = false;
+            define_paciencia_pela_dificuldade(jogo);
         }
-        desenhaTextoCentralizado(fonte_jogo, "Medio", botao_medio, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Medio", botao_medio, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         DrawRectangleRec(botao_dificil, RED);
-        if (coloreSeColide(botao_dificil, GetMousePosition()) && IsMouseButtonPressed(0))
+        if (colore_se_colide(botao_dificil, GetMousePosition()) && IsMouseButtonPressed(0))
         {
             jogo->tela_atual = RECEPCAO;
+            jogo->jogando = true;
             jogo->dificuldade = DIFICIL;
+            jogo->pontuacao = 0;
+            jogo->fim_partida.nome[0] = '\0';
+            jogo->fim_partida.pontuacao = 0;
+            jogo->fim_partida.salvo = false;
+            define_paciencia_pela_dificuldade(jogo);
         }
-        desenhaTextoCentralizado(fonte_jogo, "Dificil", botao_dificil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Dificil", botao_dificil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         break;
 
     case COMO_JOGAR:
         DrawRectangle(0, 0, JANELA_LARGURA, JANELA_ALTURA, ORANGE);
         DrawRectangleRounded(painel, 0.08f, 16, LIME);
-        desenhaTextoCentralizado(fonte_jogo, "Como Jogar", painel_titulo,
+        desenha_texto_centralizado(fonte_jogo, "Como Jogar", painel_titulo,
                                  TAMANHO_FONTE_TITULO, ESPACO_FONTE, BLACK);
 
         /* botão Voltar */
@@ -915,7 +1490,7 @@ void desenhaJogo(Jogo *jogo)
             painel_titulo.x, y_botao_titulo_cj, 110.0f, altura_botao_titulo_cj};
         DrawRectangleRec(botao_voltar_como_jogar, GRAY);
         DrawRectangleLinesEx(botao_voltar_como_jogar, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Voltar", botao_voltar_como_jogar, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Voltar", botao_voltar_como_jogar, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         if (CheckCollisionPointRec(GetMousePosition(), botao_voltar_como_jogar) && IsMouseButtonPressed(0))
             jogo->tela_atual = MENU;
 
@@ -967,7 +1542,7 @@ void desenhaJogo(Jogo *jogo)
 
             for (int i = 0; colunas[c][i] != NULL; i++)
             {
-                int usadas = desenhaTextoQuebrado(fonte_jogo, colunas[c][i],
+                int usadas = desenha_texto_quebrado(fonte_jogo, colunas[c][i],
                                                   col_x, y, tam, ESPACO_FONTE, passo,
                                                   largura_coluna, BLACK);
                 y += usadas * passo;
@@ -981,7 +1556,7 @@ void desenhaJogo(Jogo *jogo)
         DrawRectangleRec(painel_corpo, ORANGE);
         DrawRectangleLinesEx(painel_corpo, 2.0f, BLACK);
 
-        desenhaTextoCentralizado(fonte_jogo, "HISTORICO", painel_titulo,
+        desenha_texto_centralizado(fonte_jogo, "HISTORICO", painel_titulo,
                                  TAMANHO_FONTE_TITULO, ESPACO_FONTE, BLACK);
 
         /* botão Voltar (sem ele não tem como sair da tela) */
@@ -991,7 +1566,7 @@ void desenhaJogo(Jogo *jogo)
             painel_titulo.x, y_botao_titulo, 110.0f, altura_botao_titulo};
         DrawRectangleRec(botao_voltar_historico, GRAY);
         DrawRectangleLinesEx(botao_voltar_historico, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Voltar", botao_voltar_historico, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Voltar", botao_voltar_historico, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         if (CheckCollisionPointRec(GetMousePosition(), botao_voltar_historico) && IsMouseButtonPressed(0))
             jogo->tela_atual = MENU;
 
@@ -1004,10 +1579,10 @@ void desenhaJogo(Jogo *jogo)
             y_botao_titulo, 140.0f, altura_botao_titulo};
         DrawRectangleRec(botao_ordem_alfabetica, !historico_por_pontuacao ? SKYBLUE : GRAY);
         DrawRectangleLinesEx(botao_ordem_alfabetica, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Alfabetica", botao_ordem_alfabetica, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Alfabetica", botao_ordem_alfabetica, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         DrawRectangleRec(botao_ordem_pontuacao, historico_por_pontuacao ? SKYBLUE : GRAY);
         DrawRectangleLinesEx(botao_ordem_pontuacao, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Pontuacao", botao_ordem_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Pontuacao", botao_ordem_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
 
         if (IsMouseButtonPressed(0))
         {
@@ -1054,16 +1629,16 @@ void desenhaJogo(Jogo *jogo)
 
         DrawRectangleRec(botao_inferior_volta_tudo, GRAY);
         DrawRectangleLinesEx(botao_inferior_volta_tudo, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "<<<", botao_inferior_volta_tudo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "<<<", botao_inferior_volta_tudo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         DrawRectangleRec(botao_inferior_anterior, GRAY);
         DrawRectangleLinesEx(botao_inferior_anterior, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Anterior", botao_inferior_anterior, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Anterior", botao_inferior_anterior, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         DrawRectangleRec(botao_inferior_proximo, GRAY);
         DrawRectangleLinesEx(botao_inferior_proximo, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "Proximo", botao_inferior_proximo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Proximo", botao_inferior_proximo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         DrawRectangleRec(botao_inferior_vai_tudo, GRAY);
         DrawRectangleLinesEx(botao_inferior_vai_tudo, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, ">>>", botao_inferior_vai_tudo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, ">>>", botao_inferior_vai_tudo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
 
         /* paginação sobre a cópia ordenada */
         int numero_linhas = 8;
@@ -1106,10 +1681,10 @@ void desenhaJogo(Jogo *jogo)
 
         DrawRectangleRec(retangulo_superior_nome, GRAY);
         DrawRectangleLinesEx(retangulo_superior_nome, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "NOME", retangulo_superior_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "NOME", retangulo_superior_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
         DrawRectangleRec(retangulo_superior_pontuacao, GRAY);
         DrawRectangleLinesEx(retangulo_superior_pontuacao, 2.0f, BLACK);
-        desenhaTextoCentralizado(fonte_jogo, "PONTUAÇÃO", retangulo_superior_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "PONTUAÇÃO", retangulo_superior_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
 
         // Retangulos nome e retangulos pontuacao - 8 nomes cada coluna
         for (int i = 1; i <= numero_linhas; i++)
@@ -1136,34 +1711,36 @@ void desenhaJogo(Jogo *jogo)
             if (indice < total_registros)
             {
                 RegistroHistorico registro = acessar(&historico_exibicao, indice);
-                desenhaTextoCentralizado(fonte_jogo, registro.nome, retangulo_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+                desenha_texto_centralizado(fonte_jogo, registro.nome, retangulo_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
                 char texto_pontos[16];
                 snprintf(texto_pontos, sizeof(texto_pontos), "%d", registro.pontuacao);
-                desenhaTextoCentralizado(fonte_jogo, texto_pontos, retangulo_pontos, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+                desenha_texto_centralizado(fonte_jogo, texto_pontos, retangulo_pontos, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
             }
         }
 
         if (total_registros == 0)
-            desenhaTextoCentralizado(fonte_jogo, "Historico vazio - nenhuma partida registrada ainda",
-                                     painel_corpo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, DARKGRAY);
+            desenha_texto_centralizado(fonte_jogo, "Historico vazio - nenhuma partida registrada ainda",
+                                     painel_corpo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, RED);
 
         break;
     case RECEPCAO:
         Rectangle origem = {0, 0, (float)recepcao.width, (float)recepcao.height};
         Rectangle destino = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(recepcao, origem, destino, (Vector2){0, 0}, 0.0f, WHITE);
+        desenha_turno(jogo);
         desenha_paciencia_cliente(jogo);
         if (jogo->proximo_cliente) {
             anda_fila(jogo);
         }
         desenha_fila(&jogo->fila_clientes);
-        desenhaJogador(&jogo->jogador);
+        desenha_jogador(&jogo->jogador);
+        desenha_entrega_pedido(jogo);
         atualiza_anim_entidades(jogo);
         float distancia_para_cozinha = (MAPA_COLUNAS - 2) * TILE_SIZE;
         if(jogo->jogador.posicao.x >= distancia_para_cozinha){
             jogo->tela_atual = COZINHA;
         }
-        desenhaComanda(&jogo->jogador.pedido_atual.receita_pedido);
+        desenha_comanda(&jogo->jogador.pedido_atual.receita_pedido);
 
         break;
 
@@ -1171,10 +1748,11 @@ void desenhaJogo(Jogo *jogo)
         Rectangle origem_2 = {0, 0, (float)cozinha.width, (float)cozinha.height};
         Rectangle destino_2 = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(cozinha, origem_2, destino_2, (Vector2){0, 0}, 0.0f, WHITE);
+        desenha_turno(jogo);
         desenha_paciencia_cliente(jogo);
         atualiza_hitbox_jogador(&jogo->jogador);
-        desenhaEquipamentos(jogo);
-        desenhaJogador(&jogo->jogador);
+        desenha_equipamentos(jogo);
+        desenha_jogador(&jogo->jogador);
         Rectangle origem_parede_baixo = {
             0, 0, (float)parede_baixo.width, (float)cozinha.height};
         DrawTexturePro(parede_baixo, origem_parede_baixo, destino_2,
@@ -1202,7 +1780,8 @@ void desenhaJogo(Jogo *jogo)
                        (Vector2){0, 0}, 0.0f,
                        mochila_em_foco ? (Color){215, 255, 215, 255} : WHITE);
         DrawRectangleRoundedLinesEx(fundo_mochila, 0.2f, 8, 2.0f, BLACK);
-        desenhaComanda(&jogo->jogador.pedido_atual.receita_pedido);
+        desenha_comanda(&jogo->jogador.pedido_atual.receita_pedido);
+        desenha_hamburger(jogo);
         atualiza_anim_entidades(jogo);
         float distancia_para_saguao = (MAPA_COLUNAS - 31) * TILE_SIZE;
         if(jogo->jogador.posicao.x <= distancia_para_saguao){
@@ -1214,7 +1793,7 @@ void desenhaJogo(Jogo *jogo)
     }
 }
 
-void descarregaAssets(void)
+void descarrega_assets(void)
 {
     UnloadTexture(fogao);
     UnloadTexture(bancada_normal);

@@ -23,21 +23,21 @@ void merge(RegistroHistorico a[], RegistroHistorico aux[], int ini, int meio, in
     while (j <= fim)  a[k++] = aux[j++];  /* linhas 17-20 */
 }
 
-void mergeSortRec(RegistroHistorico a[], RegistroHistorico aux[], int ini, int fim) {
+void merge_sort_rec(RegistroHistorico a[], RegistroHistorico aux[], int ini, int fim) {
     if (ini >= fim) return;               /* conquista: 0 ou 1 elemento */
     int meio = ini + (fim - ini) / 2;     /* divisão: ao meio */
-    mergeSortRec(a, aux, ini, meio);
-    mergeSortRec(a, aux, meio + 1, fim);
+    merge_sort_rec(a, aux, ini, meio);
+    merge_sort_rec(a, aux, meio + 1, fim);
     merge(a, aux, ini, meio, fim);        /* recombinação */
 }
 
-void mergeSortPontuacao(RegistroHistorico a[], int n) {
+void merge_sort_pontuacao(RegistroHistorico a[], int n) {
     RegistroHistorico *aux = malloc(n * sizeof(RegistroHistorico));   /* o vetor extra: O(n) de memória */
-    mergeSortRec(a, aux, 0, n - 1);
+    merge_sort_rec(a, aux, 0, n - 1);
     free(aux);
 }
 
-void mergeAlfabetico(RegistroHistorico a[], RegistroHistorico aux[], int ini, int meio, int fim) {
+void merge_alfabetico(RegistroHistorico a[], RegistroHistorico aux[], int ini, int meio, int fim) {
     int t, i, j, k;
 
     for (t = ini; t <= fim; t++)      /* linhas 1-2: copia para Aux */
@@ -55,31 +55,31 @@ void mergeAlfabetico(RegistroHistorico a[], RegistroHistorico aux[], int ini, in
     while (j <= fim)  a[k++] = aux[j++];  /* linhas 17-20 */
 }
 
-void mergeSortRecAlfabetico(RegistroHistorico a[], RegistroHistorico aux[], int ini, int fim) {
+void merge_sort_rec_alfabetico(RegistroHistorico a[], RegistroHistorico aux[], int ini, int fim) {
     if (ini >= fim) return;               /* conquista: 0 ou 1 elemento */
     int meio = ini + (fim - ini) / 2;     /* divisão: ao meio */
-    mergeSortRecAlfabetico(a, aux, ini, meio);
-    mergeSortRecAlfabetico(a, aux, meio + 1, fim);
-    mergeAlfabetico(a, aux, ini, meio, fim);        /* recombinação */
+    merge_sort_rec_alfabetico(a, aux, ini, meio);
+    merge_sort_rec_alfabetico(a, aux, meio + 1, fim);
+    merge_alfabetico(a, aux, ini, meio, fim);        /* recombinação */
 }
 
-void mergeSortAlfabetico(RegistroHistorico a[], int n) {
+void merge_sort_alfabetico(RegistroHistorico a[], int n) {
     RegistroHistorico *aux = malloc(n * sizeof(RegistroHistorico));   /* o vetor extra: O(n) de memória */
-    mergeSortRecAlfabetico(a, aux, 0, n - 1);
+    merge_sort_rec_alfabetico(a, aux, 0, n - 1);
     free(aux);
 }
 
-ListaContHistorico ordenaHistorico(ListaContHistorico *historico, bool isPontuacao) {
+ListaContHistorico ordena_historico(ListaContHistorico *historico, bool is_pontuacao) {
     ListaContHistorico copia; // vou precisar copiar os dados pra não afetar o historico original (talvez não seja necessário, mas não é prejuízo de desempenho significativo e dá uma flexibilidade de uso maior)
     inicializar(&copia);
 
     if (historico == NULL || historico->tamanho == 0) return copia; // pra evitar de causar erros nos merge sorts por receber lista vazia
     for (int i = 0; i < historico->tamanho; i++) // copia o histórico pra cópia
         inserir(&copia, historico->dados[i], i);
-    if (isPontuacao)
-        mergeSortPontuacao(copia.dados, copia.tamanho);
+    if (is_pontuacao)
+        merge_sort_pontuacao(copia.dados, copia.tamanho);
     else
-        mergeSortAlfabetico(copia.dados, copia.tamanho);
+        merge_sort_alfabetico(copia.dados, copia.tamanho);
 
     return copia;
 }

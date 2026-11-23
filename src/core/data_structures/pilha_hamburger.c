@@ -53,3 +53,16 @@ int tamanhoPilha(const PilhaHamburger *p) {
 
     return contador;
 }
+
+void reiniciaPilha(PilhaHamburger *p){
+    NodoPilha *aux = p->topo;
+    NodoPilha *ant;
+    while(aux != NULL){
+        ant = aux;
+        aux = aux->prox;
+        free(ant);
+
+    }
+
+    p->topo = NULL;
+}

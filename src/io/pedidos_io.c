@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <dados.h>
 
-int lerPedidos(FILE *fp)
+int ler_pedidos(FILE *fp)
 {
     char linha[128];
     char receita[16]; /* até 7 chars da receita + 1 pro \0 * 2 por margem de segurança */

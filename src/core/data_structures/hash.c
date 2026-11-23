@@ -54,3 +54,19 @@ bool removerHash(TabelaHash *t, int chave) {
     }
     return 0;   /* não encontrado */
 }
+
+void reiniciaHash(TabelaHash *t){
+    NoHash *aux;
+
+    for(int i = 0; i < t->m; i++){
+        aux = t->tabela[i];
+        NoHash *ant;
+        while(aux != NULL){
+            ant = aux;
+            aux = aux->prox;
+            free(ant);
+        }
+        t->tabela[i] = NULL;
+    }
+    
+}

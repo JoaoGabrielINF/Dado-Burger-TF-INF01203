@@ -8,7 +8,7 @@
  * @param[in] fp arquivo já aberto em modo r (o fopen(argv[2], "r") da main).
  * @return quantidade de registros lidos com sucesso, ou -1 se fp for NULL.
  */
-int lerHistorico(FILE *fp);
+int ler_historico(FILE *fp);
 
 /**
  * @brief Acrescenta uma partida encerrada no fim do arquivo de histórico.
@@ -18,4 +18,4 @@ int lerHistorico(FILE *fp);
  * @return true se o registro foi gravado.
  * @return false se de erro.
  */
-bool salvarPartidaHistorico(const char *caminho, const char *nome, int pontuacao);
+bool salvar_partida_historico(const char *caminho, const char *nome, int pontuacao);

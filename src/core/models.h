@@ -20,7 +20,6 @@ typedef struct {
     bool pedido_entregue; /**< Indica se o pedido foi entregue */
     char adicionar_pilha; /**< Caractere à ser adicionado na pilha */
     OpcoesPilha opcao; /**< Verifica se o jogador quer adicionar ou remover item da pilha, true se adiciona, false se remove */
-    int quantidade_ingredientes_adicionados;/**< Numero de ingredientes adicionados na pilha */
     
  } Pedido;
 
@@ -57,7 +56,6 @@ typedef struct {
  */
 
 typedef struct {
-    MateriaisCozinha materiais; /**< Tipo do equipamento */
     Vector2 posicao_pixels; /**< Posição do equipamento em pixels */
     TileAtual tile_atual; /**< Posição do equipamento no mapa */
     Rectangle hitbox;
@@ -66,6 +64,13 @@ typedef struct {
     bool foi_utilizado; /**< Indica se o equipamento foi utilizado uma vez */
     int turno_pronto; /**< Tempo restante no preparo de um alimento */
 } EquipamentoCozinha;
+
+typedef struct {
+    char nome[21]; /**< Nome digitado pelo jogador, limitado a 20 caracteres */
+    int pontuacao; /**< Pontuacao obtida pelo jogador */
+    bool salvo; /**< Impede que o histórico seja salvo mais de uma vez */
+    const char *caminho_historico; /**< Caminho recebido no argumento do programa */
+} FimPartida;
 
 /**
  * @brief Matriz de tiles do mapa
@@ -82,6 +87,7 @@ typedef struct {
     DificuldadeJogo dificuldade; /**< Dificuldade do jogo selecionada */
     Jogador jogador; /**< Personagem do jogador */
     EquipamentoCozinha equipamentos[NUMERO_EQUIPAMENTOS]; /**< Equipamentos da cozinha */
+    FimPartida fim_partida; /**< Dados usados pelas telas de vitória e derrota */
     int turno_atual; /**< Turno atual em que o jogo se encontra */
     bool aumentou_turno; /**< Indica se o turno aumentou */
     FilaClientes fila_clientes; /**< Fila de clientes */
@@ -91,4 +97,5 @@ typedef struct {
     float tempo; /**< Tempo decorrido na partida */
     Mapa mapa[NUMERO_MAPAS]; /**< Mapas da partida: recepcao e cozinha */
     bool proximo_cliente; /**< Indica se é para a fila andar/viro proximo cliente */
+    bool primeiro_cliente; /**< Indica se o cliente é o primeiro da partida */
 } Jogo;

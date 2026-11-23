@@ -49,22 +49,31 @@ void inicializa_jogo(Jogo *jogo)
     jogo->jogador.pedido_atual.pedido_pronto = false;
     jogo->jogador.pedido_atual.pedido_entregue = false;
     jogo->proximo_cliente = false;
+    jogo->fim_partida.nome[0] = '\0';
+    jogo->fim_partida.pontuacao = 0; /* TODO: configurar cálculo adicional da pontuação */
+    jogo->fim_partida.salvo = false;
+    jogo->fim_partida.caminho_historico = NULL;
+    jogo->primeiro_cliente = true;
+
+    for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++)
+    {
+        jogo->equipamentos[i].em_uso = false;
+        jogo->equipamentos[i].foi_utilizado = false;
+        jogo->equipamentos[i].turno_pronto = 0;
+    }
+
     const char simbolos_perenes[MAXIMO_PERENES] = {
         [PICLES] = PICLES_SIMBOLO,
         [ALFACE] = ALFACE_SIMBOLO,
         [QUEIJO_SUICO] = QUEIJO_SUICO_SIMBOLO,
         [QUEIJO_CHEDDAR] = QUEIJO_CHEDDAR_SIMBOLO,
         [CEBOLA] = CEBOLA_SIMBOLO,
-        [TOMATE] = TOMATE_SIMBOLO
-    };
+        [TOMATE] = TOMATE_SIMBOLO};
     for (int i = 0; i < MAXIMO_PERENES; i++)
     {
         jogo->jogador.estoque_perenes[i].alimento = simbolos_perenes[i];
         jogo->jogador.estoque_perenes[i].quantidade = 0;
     }
-
-    for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++)
-        jogo->equipamentos[i].materiais = (MateriaisCozinha)i;
 
     inicializaFila(&jogo->fila_clientes);
     inicializaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);
@@ -78,6 +87,9 @@ void inicializa_jogo(Jogo *jogo)
     {
         inicializaHeap(&jogo->jogador.heap_estoque[i]);
         jogo->jogador.heap_estoque[i].alimento = simbolos_heap[i];
+        for(int j = 0; j < MAX_ALIM; j++){
+            jogo->jogador.heap_estoque[i].validade_alimentos[j] = 999;
+        }
     }
 
     animacao_inicializar(&jogo->jogador.animacao);
@@ -107,12 +119,17 @@ void inicializa_pedido_cliente(Jogo *jogo)
         }
         jogo->jogador.pedido_atual.receita_pedido.ini = pedido_buscado->dado.receita_pedido.ini;
     }
+
+    reiniciaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);
+    jogo->jogador.pedido_atual.pedido_entregue = false;
+    jogo->jogador.pedido_atual.pedido_pronto = false;
 }
 
 void gerencia_turnos(Jogo *jogo)
 {
     for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++)
     {
+
         if (jogo->equipamentos[i].foi_utilizado)
         {
             // Se foi colocado algum item no equipamento para fazer ou se empilhou/desempilhou no hamburger
@@ -122,7 +139,7 @@ void gerencia_turnos(Jogo *jogo)
                 jogo->equipamentos[i].turno_pronto = jogo->turno_atual + TURNOS_COZIMENTO;
             }
 
-            if (!(i = BANCADA))
+            if (i != BANCADA)
             {
                 jogo->equipamentos[i].foi_utilizado = false;
             }
@@ -132,20 +149,25 @@ void gerencia_turnos(Jogo *jogo)
     }
 }
 
-void gerencia_paciencia(Jogo* jogo){
-    if(jogo->aumentou_turno){
+void gerencia_paciencia(Jogo *jogo)
+{
+    if (jogo->aumentou_turno)
+    {
         jogo->fila_clientes.frente->cliente.paciencia_atual -= 1;
-        jogo->aumentou_turno = false;
     }
 }
 
 void gerencia_estoque_pereciveis(Jogo *jogo)
 {
-    for (int i = 0; i < QUANTIDADE_ALIMENTOS_PERECIVEIS; i++)
+    if (jogo->aumentou_turno)
     {
-        char removido;
-        consultarTopoHeap(&jogo->jogador.heap_estoque[i], jogo->turno_atual, &removido);
+        for (int i = 0; i < QUANTIDADE_ALIMENTOS_PERECIVEIS; i++)
+        {
+            char removido;
+            consultarTopoHeap(&jogo->jogador.heap_estoque[i], jogo->turno_atual, &removido);
+        }
     }
+    jogo->aumentou_turno = false;
 }
 
 void prepara_ingredientes(Jogo *jogo)
@@ -196,6 +218,32 @@ void prepara_ingredientes(Jogo *jogo)
     }
 }
 
+
+void compara_lista_e_pilha(PilhaHamburger *pilha, const ListaReceita *lista){
+    PilhaHamburger pilha_aux;
+    NodoLista *aux = lista->ini;
+    char ingrediente_auxiliar;
+    inicializaPilha(&pilha_aux);
+    while(!estaVaziaPilha(pilha)){
+        popPilha(pilha, &ingrediente_auxiliar);
+        pushPilha(&pilha_aux, ingrediente_auxiliar);
+    }
+
+    while(!estaVaziaPilha(&pilha_aux) && aux->prox  != NULL){
+        popPilha(&pilha_aux, &ingrediente_auxiliar);
+        pushPilha(pilha, ingrediente_auxiliar);
+        if(aux->ingrediente == ingrediente_auxiliar){
+            pilha->topo->ingrediente_correto = true;
+        }
+        else{
+            pilha->topo->ingrediente_correto = false;
+        }
+        aux = aux->prox;
+    }
+
+}
+
+
 void monta_hamburger(Jogo *jogo)
 {
     if (jogo->equipamentos[BANCADA].foi_utilizado)
@@ -212,41 +260,71 @@ void monta_hamburger(Jogo *jogo)
         {
             char alimento_adicionado = jogo->jogador.pedido_atual.adicionar_pilha;
 
-            if(alimento_adicionado == PAO_SIMBOLO || alimento_adicionado == KETCHUP_SIMBOLO || alimento_adicionado == MOSTARDA_SIMBOLO){
+            if (alimento_adicionado == PAO_SIMBOLO || alimento_adicionado == KETCHUP_SIMBOLO || alimento_adicionado == MOSTARDA_SIMBOLO)
+            {
                 // Se o alimento for ilimitado, não diminui nada de nenhum estoque
                 pushPilha(&jogo->jogador.pedido_atual.pilha_hamburger, alimento_adicionado);
                 jogo->equipamentos[BANCADA].foi_utilizado = false;
+                
+                
             }
-            else{
+            else
+            {
 
-            
-            for(int i = 0; i < MAXIMO_PERENES; i++){
-                if(jogo->jogador.estoque_perenes[i].alimento == alimento_adicionado && jogo->jogador.estoque_perenes[i].quantidade > 0){
-                    pushPilha(&jogo->jogador.pedido_atual.pilha_hamburger, alimento_adicionado);
-                    jogo->equipamentos[BANCADA].foi_utilizado = false;
-                    jogo->jogador.estoque_perenes[i].quantidade--;
+                for (int i = 0; i < MAXIMO_PERENES; i++)
+                {
+                    if (jogo->jogador.estoque_perenes[i].alimento == alimento_adicionado && jogo->jogador.estoque_perenes[i].quantidade > 0)
+                    {
+                        pushPilha(&jogo->jogador.pedido_atual.pilha_hamburger, alimento_adicionado);
+                        jogo->equipamentos[BANCADA].foi_utilizado = false;
+                        jogo->jogador.estoque_perenes[i].quantidade--;
+                       
+                    }
+                }
+
+                for (int i = 0; i < QUANTIDADE_ALIMENTOS_PERECIVEIS; i++)
+                {
+                    if (jogo->jogador.heap_estoque[i].alimento == alimento_adicionado && jogo->jogador.heap_estoque[i].tamanho_heap > 0)
+                    {
+                        removerHeap(&jogo->jogador.heap_estoque[i], &alimento_adicionado);
+                        pushPilha(&jogo->jogador.pedido_atual.pilha_hamburger, alimento_adicionado);
+                        jogo->equipamentos[BANCADA].foi_utilizado = false;
+                       
+                    }
                 }
             }
-
-            for(int i = 0; i < QUANTIDADE_ALIMENTOS_PERECIVEIS; i++){
-                if(jogo->jogador.heap_estoque[i].alimento == alimento_adicionado && jogo->jogador.heap_estoque[i].tamanho_heap > 0){
-                    removerHeap(&jogo->jogador.heap_estoque[i], &alimento_adicionado);
-                    pushPilha(&jogo->jogador.pedido_atual.pilha_hamburger, alimento_adicionado);
-                    jogo->equipamentos[BANCADA].foi_utilizado = false;
-                }
-            }
-
-
         }
-            
+    }
+    char teste;
+    topoPilha(&jogo->jogador.pedido_atual.pilha_hamburger, &teste);
+    printf("[%c]",  teste);
 
-            }
-        }
+    if(jogo->equipamentos[BANCADA].foi_utilizado) jogo->equipamentos[BANCADA].foi_utilizado = false;
 
-    if(estaVaziaPilha(&jogo->jogador.pedido_atual.pilha_hamburger)){
+    compara_lista_e_pilha(&jogo->jogador.pedido_atual.pilha_hamburger, &jogo->jogador.pedido_atual.receita_pedido);
+
+    if (estaVaziaPilha(&jogo->jogador.pedido_atual.pilha_hamburger))
+    {
         jogo->equipamentos[BANCADA].em_uso = false;
     }
-    else{
+    else
+    {
         jogo->equipamentos[BANCADA].em_uso = true;
     }
+}
+void reinicia_jogo(Jogo *jogo)
+{
+    reiniciaHash(&cache_pedidos);
+    reiniciaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);
+    inicializa_jogo(jogo);
+    
+    
+}
+void atualiza_jogo(Jogo *jogo)
+{
+    gerencia_turnos(jogo);
+    gerencia_paciencia(jogo);
+    gerencia_estoque_pereciveis(jogo);
+    prepara_ingredientes(jogo);
+    monta_hamburger(jogo);
 }

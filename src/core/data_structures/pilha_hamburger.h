@@ -73,3 +73,9 @@ bool topoPilha(const PilhaHamburger *p, char *ingrediente);
  */
 
 int tamanhoPilha(const PilhaHamburger *p);
+
+/**
+ * @brief Função que reinicia a pilha até o ponteiro do topo ficar null
+ * @param p  Estado atual da pilha
+ */
+void reiniciaPilha(PilhaHamburger *p);

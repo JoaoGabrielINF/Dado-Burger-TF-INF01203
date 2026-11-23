@@ -74,3 +74,9 @@ bool frenteFila(const FilaClientes *f, Cliente *cliente);
  */
 
 int tamanhoFila(const FilaClientes *f);
+
+/**
+ * @brief Esvazia uma fila
+ * @param f fila a ser esvaziada 
+ */
+void esvaziaFila(FilaClientes *f);

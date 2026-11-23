@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <dados.h>
 
-int lerHistorico(FILE *fp)
+int ler_historico(FILE *fp)
 {
     char linha[128];
     char nome[21]; /* tamanho limite de 20 + 1 pro \0 */
@@ -39,7 +39,7 @@ int lerHistorico(FILE *fp)
     return total;
 }
 
-bool salvarPartidaHistorico(const char *caminho, const char *nome, int pontuacao)
+bool salvar_partida_historico(const char *caminho, const char *nome, int pontuacao)
 {
     FILE *fp = fopen(caminho, "a"); /* APPEND: preserva as partidas anteriores */
     if (fp == NULL)

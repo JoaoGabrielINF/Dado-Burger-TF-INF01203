@@ -35,8 +35,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Uso: %s <pedidos> <historico>\n", argv[0]);
         return 1;
     }
-    FILE *fp = fopen(argv[1], "r"); // abre o arquivo de pedidos
-    FILE *fh = fopen(argv[2], "r"); // abre o arquivo de histórico
+    FILE *fp = fopen(argv[1], "r");
+    FILE *fh = fopen(argv[2], "r");
 
     // Métricas (5 no PDF da atv), os contadores são zerados e é gerado um log novo a cada execução
     metricas_limpar_execucao();
@@ -56,14 +56,14 @@ int main(int argc, char **argv)
     // tempo de carregamento tirado do PDF
     Timer t_carga;
     timer_iniciar(&t_carga);
-    lerPedidos(fp); // parsing + inserção na AVL
+    ler_pedidos(fp); // parsing + inserção na AVL
     metricas.tempo_carregamento = timer_parar(&t_carga);
     fclose(fp);
 
     metricas.altura_resultante = avlAltura(pedidos_avl) + 1; // precisa do + 1 pq o TAD difere da convenção pedida no PDF
 
-    // histórico fica vazio se o arquivo n existir
-    metricas.entradas_historico = (fh != NULL) ? lerHistorico(fh) : 0;
+    // Histórico fica vazio se o arquivo não existir.
+    metricas.entradas_historico = (fh != NULL) ? ler_historico(fh) : 0;
     if (fh != NULL)
         fclose(fh);
 
@@ -77,6 +77,7 @@ int main(int argc, char **argv)
 
     Jogo meu_jogo;
     inicializa_jogo(&meu_jogo);
+    meu_jogo.fim_partida.caminho_historico = argv[2];
     if (!carregar_mapa("dados/tela_jogo_saguao.txt", meu_jogo.mapa[MAPA_RECEPCAO].tiles))
     {
         return 1;
@@ -99,13 +100,8 @@ int main(int argc, char **argv)
     RenderTexture2D alvo = LoadRenderTexture(JANELA_LARGURA, JANELA_ALTURA);
     SetTextureFilter(alvo.texture, TEXTURE_FILTER_BILINEAR);
 
-    carregaAssets();
+    carrega_assets();
 
-    bool primeiro_cliente = true;
-
-
-    meu_jogo.jogador.estoque_perenes[0].quantidade = 10;
-    meu_jogo.jogador.heap_estoque[0].tamanho_heap = 10;
     while (!WindowShouldClose())
     {
         if (IsKeyPressed(KEY_F11))
@@ -123,34 +119,52 @@ int main(int argc, char **argv)
         SetMouseOffset((int)-off_x, (int)-off_y);
         SetMouseScale(1.0f / escala, 1.0f / escala);
 
-        /* movimentação do jogador (com colisão contra o mapa) nas telas jogáveis */
-        if (meu_jogo.tela_atual == RECEPCAO || meu_jogo.tela_atual == COZINHA)
+        switch (meu_jogo.tela_atual)
         {
+        case RECEPCAO:
+        case COZINHA:
             meu_jogo.jogando = true;
             atualiza_jogador(&meu_jogo);
-            // Realiza a inicialização do pedido do 1° cliente
-            if(primeiro_cliente){
+            atualiza_jogo(&meu_jogo);
+            if (meu_jogo.primeiro_cliente) {
                 inicializa_pedido_cliente(&meu_jogo);
-                primeiro_cliente = false;
+                meu_jogo.primeiro_cliente = false;
             }
 
-            if(meu_jogo.jogador.pedido_atual.pedido_entregue){
+            if (meu_jogo.jogador.pedido_atual.pedido_entregue) {
                 Cliente cliente_removido;
                 dequeueFila(&meu_jogo.fila_clientes, &cliente_removido);
                 meu_jogo.pontuacao++;
-                if(!estaVaziaFila(&meu_jogo.fila_clientes)){
+                if (!estaVaziaFila(&meu_jogo.fila_clientes)) {
                     meu_jogo.proximo_cliente = true;
                     inicializa_pedido_cliente(&meu_jogo);
-                    
+                } else {
+                    meu_jogo.tela_atual = VITORIA;
+                    meu_jogo.jogando = false;
                 }
             }
+
+            if (!estaVaziaFila(&meu_jogo.fila_clientes) &&
+                meu_jogo.fila_clientes.frente->cliente.paciencia_atual <= 0) {
+                meu_jogo.tela_atual = DERROTA;
+                meu_jogo.jogando = false;
+                metricas.hash_n = cache_pedidos.n;
+            }
+            break;
+        case VITORIA:
+        case DERROTA:
+            break;
+        default:
+            break;
         }
+
+        
 
         /* 1. desenha tudo na textura lógica */
         TelaAtual tela_anterior = meu_jogo.tela_atual;
         BeginTextureMode(alvo);
         ClearBackground(RAYWHITE);
-        desenhaJogo(&meu_jogo);
+        desenha_jogo(&meu_jogo);
         EndTextureMode();
         if (meu_jogo.tela_atual != tela_anterior)
             carrega_estruturas_da_tela(&meu_jogo);
@@ -165,7 +179,7 @@ int main(int argc, char **argv)
         EndDrawing();
     }
 
-    descarregaAssets();
+    descarrega_assets();
     UnloadRenderTexture(alvo);
     CloseWindow();
     return 0;

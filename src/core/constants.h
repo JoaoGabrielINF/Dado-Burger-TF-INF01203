@@ -58,13 +58,13 @@
 #define X_DISPLAY_INICIO (X_BOTAO_INICIO + LARGURA_BOTAO_INICIO / 2 - LARGURA_DISPLAY_INICIO / 2)
 
 /** Paciencia maxima medida em turnos dos clientes no modo fácil */
-#define PACIENCIA_MAXIMA_FACIL 20
+#define PACIENCIA_MAXIMA_FACIL 23
 
 /** Paciencia maxima medida em turnos dos clientes no modo médio */
-#define PACIENCIA_MAXIMA_MEDIO 15
+#define PACIENCIA_MAXIMA_MEDIO 18
 
 /** Paciencia maxima medida em turnos dos clientes no modo difícil */
-#define PACIENCIA_MAXIMA_DIFICIL 12
+#define PACIENCIA_MAXIMA_DIFICIL 15
 
 /** Numero de equipamentos na cozinha */
 #define NUMERO_EQUIPAMENTOS 3

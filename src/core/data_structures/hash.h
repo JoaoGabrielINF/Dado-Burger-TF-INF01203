@@ -56,3 +56,9 @@ NodoLista* buscarHash(TabelaHash *t, int chave);
  * @return false se a chave não estiver na tabela
  */
 bool removerHash(TabelaHash *t, int chave);
+
+/**
+ * @brief Reinicia a tabela hash para a proxima partida
+ * @param t tabela hash a sr reiniciada
+ */
+void reiniciaHash(TabelaHash *t);
