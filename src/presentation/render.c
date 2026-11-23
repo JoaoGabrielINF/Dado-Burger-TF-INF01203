@@ -1216,9 +1216,47 @@ static void processa_nome_fim_partida(Jogo *jogo)
                                   jogo->fim_partida.pontuacao),
                     tamanho(&historico_partidas));
             historico_reordenar();
-            jogo->tela_atual = MENU;
+            jogo->fim_partida.relatorio_visivel = true; /* 5.2: exibe o Relatório antes de voltar ao menu */
             jogo->jogando = false;
         }
+    }
+}
+
+/* 5.2: exibe o Relatório de Desempenho na tela — mesmo conteúdo do medicoes.log,
+   consumindo a mesma montagem (medicoes_obter_relatorio) para não divergirem. */
+static void desenha_relatorio_desempenho(void)
+{
+    static char rotulos[MEDICOES_MAX_LINHAS][MEDICOES_TAM_ROTULO];
+    static char valores[MEDICOES_MAX_LINHAS][MEDICOES_TAM_VALOR];
+    int n = medicoes_obter_relatorio(rotulos, valores, MEDICOES_MAX_LINHAS);
+
+    const float x = JANELA_LARGURA * 0.16f;
+    const float largura = JANELA_LARGURA * 0.68f;
+    const float y_topo = JANELA_ALTURA * 0.26f;
+    const float passo = 17.0f;
+    const float altura = n * passo + 40.0f;
+
+    Rectangle painel = {x, y_topo, largura, altura};
+    DrawRectangleRec(painel, (Color){15, 15, 15, 235});
+    DrawRectangleLinesEx(painel, 2.0f, GRAY);
+
+    desenha_texto_centralizado(fonte_jogo, "RELATORIO DE DESEMPENHO",
+                               (Rectangle){x, y_topo, largura, 28.0f},
+                               20.0f, ESPACO_FONTE, RAYWHITE);
+
+    float y = y_topo + 34.0f;
+    for (int i = 0; i < n; i++) {
+        if (valores[i][0] == '\0') { /* linha de seção */
+            DrawTextEx(fonte_jogo, rotulos[i], (Vector2){x + 20.0f, y},
+                       15.0f, ESPACO_FONTE, (Color){144, 238, 144, 255});
+        } else {
+            DrawTextEx(fonte_jogo, rotulos[i], (Vector2){x + 20.0f, y},
+                       14.0f, ESPACO_FONTE, RAYWHITE);
+            DrawTextEx(fonte_jogo, valores[i],
+                       (Vector2){x + largura - 240.0f, y},
+                       14.0f, ESPACO_FONTE, RAYWHITE);
+        }
+        y += passo;
     }
 }
 
@@ -1246,6 +1284,26 @@ static void desenha_formulario_fim_partida(Jogo *jogo,
     }
     DrawTextEx(fonte_jogo, titulo, posicao_titulo,
                TAMANHO_FONTE_TITULO, ESPACO_FONTE, cor_titulo);
+
+    if (jogo->fim_partida.relatorio_visivel) {
+        desenha_relatorio_desempenho();
+
+        Rectangle botao_menu = {
+            JANELA_LARGURA / 2.0f - 110.0f,
+            JANELA_ALTURA - 66.0f,
+            220.0f, 44.0f};
+        DrawRectangleRounded(botao_menu, 0.2f, 8, GRAY);
+        DrawRectangleRoundedLinesEx(botao_menu, 0.2f, 8, 2.0f, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Voltar ao Menu", botao_menu,
+                                   TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        if (colore_se_colide(botao_menu, GetMousePosition()) && IsMouseButtonPressed(0)) {
+            jogo->fim_partida.nome[0] = '\0';
+            jogo->fim_partida.salvo = false;
+            jogo->fim_partida.relatorio_visivel = false;
+            jogo->tela_atual = MENU;
+        }
+        return;
+    }
 
     processa_nome_fim_partida(jogo);
 
@@ -1443,6 +1501,8 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
+            jogo->fim_partida.relatorio_visivel = false;
+            metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
         desenha_texto_centralizado(fonte_jogo, "Facil", botao_facil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
@@ -1457,6 +1517,8 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
+            jogo->fim_partida.relatorio_visivel = false;
+            metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
         desenha_texto_centralizado(fonte_jogo, "Medio", botao_medio, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
@@ -1471,6 +1533,8 @@ void desenha_jogo(Jogo *jogo)
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
+            jogo->fim_partida.relatorio_visivel = false;
+            metricas_limpar_partida(); /* Bloco 2 do relatório: partida nova, acumuladores zerados */
             define_paciencia_pela_dificuldade(jogo);
         }
         desenha_texto_centralizado(fonte_jogo, "Dificil", botao_dificil, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);

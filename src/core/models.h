@@ -69,6 +69,7 @@ typedef struct {
     char nome[21]; /**< Nome digitado pelo jogador, limitado a 20 caracteres */
     int pontuacao; /**< Pontuacao obtida pelo jogador */
     bool salvo; /**< Impede que o histórico seja salvo mais de uma vez */
+    bool relatorio_visivel; /**< Nome salvo: exibir o Relatório de Desempenho (5.2) antes de voltar ao menu */
     const char *caminho_historico; /**< Caminho recebido no argumento do programa */
 } FimPartida;
 

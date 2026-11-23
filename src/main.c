@@ -141,6 +141,8 @@ int main(int argc, char **argv)
                 } else {
                     meu_jogo.tela_atual = VITORIA;
                     meu_jogo.jogando = false;
+                    metricas.hash_n = cache_pedidos.n;
+                    medicoes_gravar_relatorio_em_arquivo("medicoes.log");
                 }
             }
 
@@ -149,6 +151,7 @@ int main(int argc, char **argv)
                 meu_jogo.tela_atual = DERROTA;
                 meu_jogo.jogando = false;
                 metricas.hash_n = cache_pedidos.n;
+                medicoes_gravar_relatorio_em_arquivo("medicoes.log");
             }
             break;
         case VITORIA:
@@ -177,6 +180,14 @@ int main(int argc, char **argv)
                        (Rectangle){off_x, off_y, w, h},
                        (Vector2){0, 0}, 0.0f, WHITE);
         EndDrawing();
+    }
+
+    /* §5.2: saída voluntária (fechar a janela no meio da partida) também
+       registra o Relatório de Desempenho antes de encerrar. */
+    if (meu_jogo.jogando) {
+        meu_jogo.jogando = false;
+        metricas.hash_n = cache_pedidos.n;
+        medicoes_gravar_relatorio_em_arquivo("medicoes.log");
     }
 
     descarrega_assets();
