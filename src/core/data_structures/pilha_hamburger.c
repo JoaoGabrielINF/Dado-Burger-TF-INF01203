@@ -55,6 +55,9 @@ int tamanhoPilha(const PilhaHamburger *p) {
 }
 
 void reiniciaPilha(PilhaHamburger *p){
+    if(estaVaziaPilha(p)){
+        return;
+    }
     NodoPilha *aux = p->topo;
     NodoPilha *ant;
     while(aux != NULL){

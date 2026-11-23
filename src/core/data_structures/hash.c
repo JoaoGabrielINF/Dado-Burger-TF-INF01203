@@ -56,6 +56,7 @@ bool removerHash(TabelaHash *t, int chave) {
 }
 
 void reiniciaHash(TabelaHash *t){
+    
     NoHash *aux;
 
     for(int i = 0; i < t->m; i++){

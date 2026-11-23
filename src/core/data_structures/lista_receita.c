@@ -89,6 +89,9 @@ bool removerPorCharLista(ListaReceita *lista, char ingrediente) {
 }
 
 void destruirLista(ListaReceita *lista) {
+    if(lista->ini == NULL){
+        return;
+    }
     NodoLista *ant;
     NodoLista *aux;
     aux = lista->ini;
@@ -103,6 +106,7 @@ void destruirLista(ListaReceita *lista) {
 }
 
 int tamanhoLista(const ListaReceita *lista) {
+    
     NodoLista *aux = lista->ini;
     int contador = 0;
 

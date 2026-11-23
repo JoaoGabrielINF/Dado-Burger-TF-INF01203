@@ -66,6 +66,9 @@ int tamanhoFila(const FilaClientes *f) {
 }
 
 void esvaziaFila(FilaClientes *f){
+    if(estaVaziaFila(f)){
+        return;
+    }
     NodoFila *aux = f->frente;
     NodoFila *ant;
     for(int i = 0; i < MAX_CLIENTES_FILA; i++){

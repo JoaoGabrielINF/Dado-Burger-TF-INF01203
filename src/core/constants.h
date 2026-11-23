@@ -170,10 +170,10 @@
 #define VELOCIDADE_CLIENTE 120.0f
 
 /** Máximo de clientes desenhados ao mesmo tempo na fila */
-#define MAX_CLIENTES_VISIVEIS 10
+#define MAX_CLIENTES_VISIVEIS 3
 
 /** Máximmo de clientes que são processados na fila do jogo */
-#define MAX_CLIENTES_FILA 10
+#define MAX_CLIENTES_FILA 3
 
 /** Limites do desenho do personagem dentro do frame de 72x72 do sprite sheet
  *  (bounding box medida em assets/imagens/principal.png) */

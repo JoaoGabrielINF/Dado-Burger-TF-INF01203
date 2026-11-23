@@ -65,8 +65,8 @@ bool removerHeap(HeapEstoque *heap, char* alimento){
 }
 
 bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, char *alimento){
-    if(heap->validade_alimentos[0] == turno_atual){
-        while(heap->validade_alimentos[0] == turno_atual){
+    if(heap->validade_alimentos[0] <= turno_atual){
+        while(heap->validade_alimentos[0] <= turno_atual){
             printf("[%d]", heap->validade_alimentos[0]);
             printf("  |  [%d]", turno_atual);
             removerHeap(heap, alimento);
