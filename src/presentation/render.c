@@ -1,5 +1,11 @@
 #include "render.h"
 #include "../gameplay/jogador.h"
+#include "../core/dados.h"
+#include "../core/sort/sort.h"
+#include "../core/time/time.h"
+#include "../core/metricas.h"
+#include "../io/medicoes.h"
+#include <stdio.h>
 
 Texture2D fundo;
 static Font fonte_jogo;
@@ -685,6 +691,53 @@ void desenha_estoque(const Jogo* jogo)
     desenha_alimentos_no_estoque(retangulo_estoque, jogo);
 }
 
+static ListaContHistorico historico_exibicao;
+static bool historico_exibicao_valida = false;
+static bool historico_por_pontuacao = false; /* false = alfabética (A-Z); true = pontuação decrescente */
+static int pagina_historico = 0;
+static bool historico_estava_aberto = false;
+
+
+static void historico_reordenar(void)
+{
+    /* cópia do histórico, a lista original não é modificada */
+    ListaContHistorico copia;
+    inicializar(&copia);
+    for (int i = 0; i < tamanho(&historico_partidas); i++)
+        inserir(&copia, acessar(&historico_partidas, i), i);
+
+    /* só o algoritmo de ordenação é cronometrado */
+    Timer t;
+    timer_iniciar(&t);
+    if (copia.tamanho > 0)
+    {
+        if (historico_por_pontuacao)
+            mergeSortPontuacao(copia.dados, copia.tamanho);
+        else
+            mergeSortAlfabetico(copia.dados, copia.tamanho);
+    }
+    double tempo = timer_parar(&t);
+
+    /* troca a cópia de exibição pela nova (libera a anterior) */
+    if (historico_exibicao_valida)
+        destruir(&historico_exibicao);
+    historico_exibicao = copia;
+    historico_exibicao_valida = true;
+
+    /* métricas e log atualizado a cada medição */
+    metricas.ordenacao_tamanho = copia.tamanho;
+    metricas.ordenacao_tempo = tempo;
+
+    FILE *log = fopen("medicoes.log", "a");
+    if (log != NULL)
+    {
+        medicoes_gravar_ordenacao(log);
+        fclose(log);
+    }
+
+    pagina_historico = 0;
+}
+
 void desenhaJogo(Jogo *jogo)
 {
 
@@ -721,6 +774,18 @@ void desenhaJogo(Jogo *jogo)
         painel_texto.y + painel_titulo.height,
         painel_texto.width,
         painel_texto.height - painel_titulo.height};
+    /* gancho de entrada no Histórico: cada acesso à tela reordena e remede */
+    if (jogo->tela_atual == HISTORICO)
+    {
+        if (!historico_estava_aberto)
+            historico_reordenar();
+        historico_estava_aberto = true;
+    }
+    else
+    {
+        historico_estava_aberto = false;
+    }
+
     switch (jogo->tela_atual)
     {
     case MENU:
@@ -843,6 +908,17 @@ void desenhaJogo(Jogo *jogo)
         desenhaTextoCentralizado(fonte_jogo, "Como Jogar", painel_titulo,
                                  TAMANHO_FONTE_TITULO, ESPACO_FONTE, BLACK);
 
+        /* botão Voltar */
+        float altura_botao_titulo_cj = painel_titulo.height * 0.7f;
+        float y_botao_titulo_cj = painel_titulo.y + (painel_titulo.height - altura_botao_titulo_cj) * 0.5f;
+        Rectangle botao_voltar_como_jogar = {
+            painel_titulo.x, y_botao_titulo_cj, 110.0f, altura_botao_titulo_cj};
+        DrawRectangleRec(botao_voltar_como_jogar, GRAY);
+        DrawRectangleLinesEx(botao_voltar_como_jogar, 2.0f, BLACK);
+        desenhaTextoCentralizado(fonte_jogo, "Voltar", botao_voltar_como_jogar, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        if (CheckCollisionPointRec(GetMousePosition(), botao_voltar_como_jogar) && IsMouseButtonPressed(0))
+            jogo->tela_atual = MENU;
+
         // Desenha o texto de "Como jogar"
 
         static const char *titulos[3] = {"Controles", "Ingredientes", "Regras"};
@@ -907,7 +983,46 @@ void desenhaJogo(Jogo *jogo)
 
         desenhaTextoCentralizado(fonte_jogo, "HISTORICO", painel_titulo,
                                  TAMANHO_FONTE_TITULO, ESPACO_FONTE, BLACK);
-        /* conteudo usa painel_corpo */
+
+        /* botão Voltar (sem ele não tem como sair da tela) */
+        float altura_botao_titulo = painel_titulo.height * 0.7f;
+        float y_botao_titulo = painel_titulo.y + (painel_titulo.height - altura_botao_titulo) * 0.5f;
+        Rectangle botao_voltar_historico = {
+            painel_titulo.x, y_botao_titulo, 110.0f, altura_botao_titulo};
+        DrawRectangleRec(botao_voltar_historico, GRAY);
+        DrawRectangleLinesEx(botao_voltar_historico, 2.0f, BLACK);
+        desenhaTextoCentralizado(fonte_jogo, "Voltar", botao_voltar_historico, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        if (CheckCollisionPointRec(GetMousePosition(), botao_voltar_historico) && IsMouseButtonPressed(0))
+            jogo->tela_atual = MENU;
+
+        /* botões de ordem alfabética ou pontuação decrescente */
+        Rectangle botao_ordem_alfabetica = {
+            painel_titulo.x + painel_titulo.width - 2.0f * 140.0f - 12.0f,
+            y_botao_titulo, 140.0f, altura_botao_titulo};
+        Rectangle botao_ordem_pontuacao = {
+            painel_titulo.x + painel_titulo.width - 140.0f,
+            y_botao_titulo, 140.0f, altura_botao_titulo};
+        DrawRectangleRec(botao_ordem_alfabetica, !historico_por_pontuacao ? SKYBLUE : GRAY);
+        DrawRectangleLinesEx(botao_ordem_alfabetica, 2.0f, BLACK);
+        desenhaTextoCentralizado(fonte_jogo, "Alfabetica", botao_ordem_alfabetica, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+        DrawRectangleRec(botao_ordem_pontuacao, historico_por_pontuacao ? SKYBLUE : GRAY);
+        DrawRectangleLinesEx(botao_ordem_pontuacao, 2.0f, BLACK);
+        desenhaTextoCentralizado(fonte_jogo, "Pontuacao", botao_ordem_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+
+        if (IsMouseButtonPressed(0))
+        {
+            Vector2 mouse_ordem = GetMousePosition();
+            bool quer_pontuacao = historico_por_pontuacao;
+            if (CheckCollisionPointRec(mouse_ordem, botao_ordem_alfabetica))
+                quer_pontuacao = false;
+            else if (CheckCollisionPointRec(mouse_ordem, botao_ordem_pontuacao))
+                quer_pontuacao = true;
+            if (quer_pontuacao != historico_por_pontuacao)
+            {
+                historico_por_pontuacao = quer_pontuacao;
+                historico_reordenar(); /* nova ordem = nova medição no log */
+            }
+        }
 
         // Retangulos de baixo
         Rectangle botao_inferior_volta_tudo = {
@@ -950,6 +1065,30 @@ void desenhaJogo(Jogo *jogo)
         DrawRectangleLinesEx(botao_inferior_vai_tudo, 2.0f, BLACK);
         desenhaTextoCentralizado(fonte_jogo, ">>>", botao_inferior_vai_tudo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
 
+        /* paginação sobre a cópia ordenada */
+        int numero_linhas = 8;
+        int total_registros = historico_exibicao_valida ? tamanho(&historico_exibicao) : 0;
+        int total_paginas = (total_registros + numero_linhas - 1) / numero_linhas;
+        if (total_paginas < 1)
+            total_paginas = 1;
+        if (pagina_historico >= total_paginas)
+            pagina_historico = total_paginas - 1;
+        if (pagina_historico < 0)
+            pagina_historico = 0;
+
+        if (IsMouseButtonPressed(0))
+        {
+            Vector2 mouse_pag = GetMousePosition();
+            if (CheckCollisionPointRec(mouse_pag, botao_inferior_volta_tudo))
+                pagina_historico = 0;
+            else if (CheckCollisionPointRec(mouse_pag, botao_inferior_anterior) && pagina_historico > 0)
+                pagina_historico--;
+            else if (CheckCollisionPointRec(mouse_pag, botao_inferior_proximo) && pagina_historico < total_paginas - 1)
+                pagina_historico++;
+            else if (CheckCollisionPointRec(mouse_pag, botao_inferior_vai_tudo))
+                pagina_historico = total_paginas - 1;
+        }
+
         // Retangulos de cima
 
         Rectangle retangulo_superior_nome = {
@@ -973,7 +1112,6 @@ void desenhaJogo(Jogo *jogo)
         desenhaTextoCentralizado(fonte_jogo, "PONTUAÇÃO", retangulo_superior_pontuacao, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
 
         // Retangulos nome e retangulos pontuacao - 8 nomes cada coluna
-        int numero_linhas = 8;
         for (int i = 1; i <= numero_linhas; i++)
         {
             float retangulo_nome_pontos_altura = 0.1 * painel_corpo.height;
@@ -990,12 +1128,24 @@ void desenhaJogo(Jogo *jogo)
                 painel_corpo.height * 0.1};
 
             DrawRectangleRec(retangulo_nome, WHITE);
-            DrawRectangleLinesEx(retangulo_nome, 2.0f, BLACK);
-            desenhaTextoCentralizado(fonte_jogo, "nome de teste", retangulo_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
             DrawRectangleRec(retangulo_pontos, WHITE);
-            desenhaTextoCentralizado(fonte_jogo, "67", retangulo_pontos, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+            DrawRectangleLinesEx(retangulo_nome, 2.0f, BLACK);
             DrawRectangleLinesEx(retangulo_pontos, 2.0f, BLACK);
+
+            int indice = pagina_historico * numero_linhas + (i - 1);
+            if (indice < total_registros)
+            {
+                RegistroHistorico registro = acessar(&historico_exibicao, indice);
+                desenhaTextoCentralizado(fonte_jogo, registro.nome, retangulo_nome, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+                char texto_pontos[16];
+                snprintf(texto_pontos, sizeof(texto_pontos), "%d", registro.pontuacao);
+                desenhaTextoCentralizado(fonte_jogo, texto_pontos, retangulo_pontos, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, BLACK);
+            }
         }
+
+        if (total_registros == 0)
+            desenhaTextoCentralizado(fonte_jogo, "Historico vazio - nenhuma partida registrada ainda",
+                                     painel_corpo, TAMANHO_FONTE_TEXTO, ESPACO_FONTE, DARKGRAY);
 
         break;
     case RECEPCAO:
