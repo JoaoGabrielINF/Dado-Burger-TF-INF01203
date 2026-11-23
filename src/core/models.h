@@ -71,6 +71,7 @@ typedef struct {
     bool salvo; /**< Impede que o histórico seja salvo mais de uma vez */
     bool relatorio_visivel; /**< Nome salvo: exibir o Relatório de Desempenho (5.2) antes de voltar ao menu */
     const char *caminho_historico; /**< Caminho recebido no argumento do programa */
+    bool voltar_ao_menu; /**< Para saber quando reiniciar as estruturas */
 } FimPartida;
 
 /**

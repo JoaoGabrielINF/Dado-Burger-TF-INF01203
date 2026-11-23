@@ -1,5 +1,7 @@
 #include "render.h"
 #include "../gameplay/jogador.h"
+#include "../gameplay/jogo.h"
+#include "mapa.h"
 #include "../core/dados.h"
 #include "../core/sort/sort.h"
 #include "../core/time/time.h"
@@ -1302,6 +1304,9 @@ static void desenha_formulario_fim_partida(Jogo *jogo,
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.salvo = false;
             jogo->fim_partida.relatorio_visivel = false;
+            jogo->fim_partida.voltar_ao_menu = true;
+            reinicia_jogo(jogo);
+            jogo->fim_partida.voltar_ao_menu = false;
             jogo->tela_atual = MENU;
         }
         return;
@@ -1500,6 +1505,12 @@ void desenha_jogo(Jogo *jogo)
             jogo->jogando = true;
             jogo->dificuldade = FACIL;
             jogo->pontuacao = 0;
+            if (estaVaziaFila(&jogo->fila_clientes)) {
+                carrega_estruturas_mapa(
+                    jogo->mapa[MAPA_RECEPCAO].tiles,
+                    jogo);
+                inicializa_clientes(jogo);
+            }
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
@@ -1516,6 +1527,12 @@ void desenha_jogo(Jogo *jogo)
             jogo->jogando = true;
             jogo->dificuldade = MEDIO;
             jogo->pontuacao = 0;
+            if (estaVaziaFila(&jogo->fila_clientes)) {
+                carrega_estruturas_mapa(
+                    jogo->mapa[MAPA_RECEPCAO].tiles,
+                    jogo);
+                inicializa_clientes(jogo);
+            }
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;
@@ -1532,6 +1549,12 @@ void desenha_jogo(Jogo *jogo)
             jogo->jogando = true;
             jogo->dificuldade = DIFICIL;
             jogo->pontuacao = 0;
+            if (estaVaziaFila(&jogo->fila_clientes)) {
+                carrega_estruturas_mapa(
+                    jogo->mapa[MAPA_RECEPCAO].tiles,
+                    jogo);
+                inicializa_clientes(jogo);
+            }
             jogo->fim_partida.nome[0] = '\0';
             jogo->fim_partida.pontuacao = 0;
             jogo->fim_partida.salvo = false;

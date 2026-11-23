@@ -297,7 +297,6 @@ void monta_hamburger(Jogo *jogo)
     }
     char teste;
     topoPilha(&jogo->jogador.pedido_atual.pilha_hamburger, &teste);
-    printf("[%c]",  teste);
 
     if(jogo->equipamentos[BANCADA].foi_utilizado) jogo->equipamentos[BANCADA].foi_utilizado = false;
 
@@ -314,12 +313,70 @@ void monta_hamburger(Jogo *jogo)
 }
 void reinicia_jogo(Jogo *jogo)
 {
-    reiniciaHash(&cache_pedidos);
+    if (!jogo)
+        return;
+
+    esvaziaFila(&jogo->fila_clientes);
     reiniciaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);
-    inicializa_jogo(jogo);
-    
-    
+    destruirLista(&jogo->jogador.pedido_atual.receita_pedido);
+    reiniciaHash(&cache_pedidos);
+
+    jogo->dificuldade = FACIL;
+    jogo->turno_atual = 0;
+    jogo->pontuacao = 0;
+    jogo->jogando = false;
+    jogo->tempo = 0.0f;
+    jogo->tela_atual = MENU;
+    jogo->jogador.velocidade = VELOCIDADE_JOGADOR;
+    jogo->jogador.pedido_atual.pedido_pronto = false;
+    jogo->jogador.pedido_atual.pedido_entregue = false;
+    jogo->proximo_cliente = false;
+    jogo->fim_partida.nome[0] = '\0';
+    jogo->fim_partida.pontuacao = 0; /* TODO: configurar cálculo adicional da pontuação */
+    jogo->fim_partida.salvo = false;
+    jogo->fim_partida.caminho_historico = NULL;
+    jogo->primeiro_cliente = true;
+
+    for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++)
+    {
+        jogo->equipamentos[i].em_uso = false;
+        jogo->equipamentos[i].foi_utilizado = false;
+        jogo->equipamentos[i].turno_pronto = 0;
+    }
+
+    const char simbolos_perenes[MAXIMO_PERENES] = {
+        [PICLES] = PICLES_SIMBOLO,
+        [ALFACE] = ALFACE_SIMBOLO,
+        [QUEIJO_SUICO] = QUEIJO_SUICO_SIMBOLO,
+        [QUEIJO_CHEDDAR] = QUEIJO_CHEDDAR_SIMBOLO,
+        [CEBOLA] = CEBOLA_SIMBOLO,
+        [TOMATE] = TOMATE_SIMBOLO};
+    for (int i = 0; i < MAXIMO_PERENES; i++)
+    {
+        jogo->jogador.estoque_perenes[i].alimento = simbolos_perenes[i];
+        jogo->jogador.estoque_perenes[i].quantidade = 0;
+    }
+
+    inicializaFila(&jogo->fila_clientes);
+    inicializaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);
+    inicializarLista(&jogo->jogador.pedido_atual.receita_pedido);
+
+    const char simbolos_heap[QUANTIDADE_ALIMENTOS_PERECIVEIS] = {
+        CARNE_SIMBOLO,
+        OVO_FRITO_SIMBOLO,
+        BACON_SIMBOLO};
+    for (int i = 0; i < QUANTIDADE_ALIMENTOS_PERECIVEIS; i++)
+    {
+        inicializaHeap(&jogo->jogador.heap_estoque[i]);
+        jogo->jogador.heap_estoque[i].alimento = simbolos_heap[i];
+        for(int j = 0; j < MAX_ALIM; j++){
+            jogo->jogador.heap_estoque[i].validade_alimentos[j] = 999;
+        }
+    }
+
+    inicializa_clientes(jogo);
 }
+
 void atualiza_jogo(Jogo *jogo)
 {
     gerencia_turnos(jogo);
