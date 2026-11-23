@@ -117,3 +117,15 @@ int tamanhoLista(const ListaReceita *lista) {
 
     return contador;
 }
+
+void copiaLista(ListaReceita *listaDestino, const ListaReceita *listaOrigem){
+    
+    destruirLista(listaDestino);
+
+    NodoLista *aux_origem = listaOrigem->ini;
+
+    while(aux_origem != NULL){
+        inserirFimLista(listaDestino, aux_origem->ingrediente);
+        aux_origem = aux_origem->prox;
+    }
+}

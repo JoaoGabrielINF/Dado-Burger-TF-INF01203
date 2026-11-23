@@ -56,7 +56,7 @@ bool removerHeap(HeapEstoque *heap, char* alimento){
     heap->tamanho_heap--;
     if(heap->tamanho_heap == 0){
         *alimento = heap->alimento;
-        heap->validade_alimentos[0] = 0;
+        heap->validade_alimentos[0] = 9999;
         return true;
     }
     heap->validade_alimentos[0] = heap->validade_alimentos[heap->tamanho_heap];

@@ -86,3 +86,10 @@ void destruirLista(ListaReceita *lista);
  * @return int tamanho da lista
  */
 int tamanhoLista(const ListaReceita *lista);
+
+/**
+ * @brief Realiza a cópia da lista origem para a lista destino
+ * @param listaDestino ponteiro para o inicio da lista destino
+ * @param listaOrigem ponteiro para o inicio da lista origem
+ */
+void copiaLista(ListaReceita *listaDestino, const ListaReceita *listaOrigem);

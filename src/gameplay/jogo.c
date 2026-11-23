@@ -102,11 +102,16 @@ void inicializa_pedido_cliente(Jogo *jogo)
     srand((unsigned)time(NULL));
     int pedido_cliente = 1 + rand() % (maior_codigo_avl - 1 + 1);
     jogo->fila_clientes.frente->cliente.codigo_pedido = pedido_cliente;
-    if ((jogo->jogador.pedido_atual.receita_pedido.ini =
+    ListaReceita lista;
+    if (( lista.ini =
              buscarHash(&cache_pedidos, pedido_cliente)) != NULL)
     {
         // se o valor da chave por diferente de null -> HIT
         metricas.hash_hits++;
+        copiaLista(&jogo->jogador.pedido_atual.receita_pedido, &lista);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
     }
     else
     {
@@ -120,7 +125,10 @@ void inicializa_pedido_cliente(Jogo *jogo)
         {
             metricas.hash_colisoes++;
         }
-        jogo->jogador.pedido_atual.receita_pedido.ini = pedido_buscado->dado.receita_pedido.ini;
+        copiaLista(&jogo->jogador.pedido_atual.receita_pedido, &pedido_buscado->dado.receita_pedido);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
+        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
     }
 
     reiniciaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);

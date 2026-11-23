@@ -11,6 +11,7 @@
 #include "presentation/mapa.h"
 #include "gameplay/jogador.h"
 #include "gameplay/jogo.h"
+
 #include <time.h>
 
 static void carrega_estruturas_da_tela(Jogo *jogo)
