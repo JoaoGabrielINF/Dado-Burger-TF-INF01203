@@ -666,16 +666,19 @@ static void desenha_badge_quantidade(Rectangle retangulo_opcao, int quantidade)
 
     char texto[8];
     snprintf(texto, sizeof(texto), quantidade > 9 ? "9+" : "%d", quantidade);
-    Vector2 centro = {
-        retangulo_opcao.x + 8.0f,
-        retangulo_opcao.y + 8.0f
+    Vector2 tamanho = MeasureTextEx(fonte_jogo, texto, 13.0f, 1.0f);
+    /* pílula ajustada ao texto: a fonte padrao da raylib e bitmap e vira
+       ilegivel abaixo de ~12px, entao o badge usa fonte 13 */
+    Rectangle pildula = {
+        retangulo_opcao.x + 1.0f,
+        retangulo_opcao.y + 1.0f,
+        tamanho.x + 8.0f,
+        16.0f
     };
-    DrawCircleV(centro, 9.0f, DARKGREEN);
-    Vector2 tamanho = MeasureTextEx(fonte_jogo, texto, 10.0f, 0.0f);
+    DrawRectangleRounded(pildula, 0.35f, 6, DARKGREEN);
     DrawTextEx(fonte_jogo, texto,
-               (Vector2){centro.x - tamanho.x / 2.0f,
-                         centro.y - tamanho.y / 2.0f},
-               10.0f, 0.0f, RAYWHITE);
+               (Vector2){pildula.x + 4.0f, pildula.y + 2.0f},
+               13.0f, 1.0f, RAYWHITE);
 }
 
 void desenha_equipamentos(Jogo * jogo){
@@ -1025,19 +1028,23 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
                     int turnos_restantes =
                         jogo->jogador.heap_estoque[j].validade_alimentos[0] -
                         jogo->turno_atual;
-                    Vector2 centro_badge = {
-                        retangulo_opcao.x + retangulo_opcao.width - 9.0f,
-                        retangulo_opcao.y + 9.0f};
-                    DrawCircleV(centro_badge, 11.0f, MAROON);
                     char texto_badge[16];
                     snprintf(texto_badge, sizeof(texto_badge), "%d",
                              turnos_restantes > 0 ? turnos_restantes : 0);
                     Vector2 tamanho_badge =
-                        MeasureTextEx(fonte_jogo, texto_badge, 13.0f, 0.0f);
+                        MeasureTextEx(fonte_jogo, texto_badge, 13.0f, 1.0f);
+                    Rectangle pildula_badge = {
+                        retangulo_opcao.x + retangulo_opcao.width -
+                            tamanho_badge.x - 9.0f,
+                        retangulo_opcao.y + 1.0f,
+                        tamanho_badge.x + 8.0f,
+                        16.0f
+                    };
+                    DrawRectangleRounded(pildula_badge, 0.35f, 6, MAROON);
                     DrawTextEx(fonte_jogo, texto_badge,
-                               (Vector2){centro_badge.x - tamanho_badge.x / 2.0f,
-                                         centro_badge.y - tamanho_badge.y / 2.0f},
-                               13.0f, 0.0f, RAYWHITE);
+                               (Vector2){pildula_badge.x + 4.0f,
+                                         pildula_badge.y + 2.0f},
+                               13.0f, 1.0f, RAYWHITE);
                 }
             }
         }

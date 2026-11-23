@@ -200006,3 +200006,7 @@ Teste
 0
 teste
 0
+Ganhei
+10
+Teste
+0
