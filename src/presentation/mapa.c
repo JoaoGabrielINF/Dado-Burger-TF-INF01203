@@ -15,17 +15,23 @@ void carrega_estruturas_mapa(const char mapa[][MAPA_COLUNAS], Jogo *jogo){
             {
             case BLOQUEADO_SIMBOLO:
                 break;
-            case CLIENTE_SIMBOLO:
-                if (jogo->fila_clientes.frente != NULL) {
+            case CLIENTE_SIMBOLO: {
+                if (jogo->fila_clientes.frente == NULL) {
+                    Cliente cliente_inicial = {0};
+                    if (!enqueueFila(&jogo->fila_clientes, &cliente_inicial)) {
+                        break;
+                    }
+
                     Cliente *cliente = &jogo->fila_clientes.frente->cliente;
                     cliente->posicao = posicao_pixels;
                     cliente->tile_inicial.linha = linha;
                     cliente->tile_inicial.coluna = coluna;
                     cliente->tile_atual.linha = linha;
                     cliente->tile_atual.coluna = coluna;
-                    cliente->textura_atual = 0;
+                    cliente->textura_atual = 1;
                 }
                 break;
+            }
             case JOGADOR_SIMBOLO:
                 jogo->jogador.posicao = posicao_pixels;
                 jogo->jogador.tile_inicial.linha = linha;
