@@ -9,7 +9,7 @@ typedef struct str_NodoPilha NodoPilha;
 struct str_NodoPilha {
     NodoPilha *prox; /**< Ponteiro para o próximo nodo */
     char ingrediente; /**< Ingrediente deste nodo */
-    bool ingrediente_correto;
+    bool ingrediente_correto; /**< Verificação se este nodo está na ordem correta */
 };
 
 /**

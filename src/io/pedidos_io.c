@@ -55,6 +55,8 @@ int lerPedidos(FILE *fp)
             false
         };
         pedidos_avl = avlInserir(pedidos_avl, pedido);
+        if (cod > maior_codigo_avl)
+            maior_codigo_avl = cod;
         total++;
     }
 

@@ -72,6 +72,16 @@ void atualiza_anim_entidades(Jogo *jogo) {
     }
 
     atualiza_animacao(&jogo->jogador.animacao);
-  
-    
+
+    for (NodoFila *nodo = jogo->fila_clientes.frente;
+         nodo != NULL;
+         nodo = nodo->prox) {
+        Cliente *cliente = &nodo->cliente;
+        if (cliente->andando) {
+            atualiza_animacao(&cliente->animacao);
+        } else {
+            cliente->animacao.atual = cliente->animacao.primeiro;
+            cliente->animacao.duracao_restante = cliente->animacao.velocidade;
+        }
+    }
 }

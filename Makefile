@@ -45,6 +45,7 @@ LDLIBS   := -L$(RAYLIB_PATH)/lib -lraylib -lopengl32 -lgdi32 -lwinmm
 SRC_DIRS := src src/core src/core/data_structures src/core/sort src/core/time src/presentation src/io src/gameplay
 SRCS := $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.c))
 OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
+DEPS := $(OBJECTS:.o=.d)
 
 # ---------------------------------- Regras ----------------------------------
 all: $(TARGET)
@@ -54,7 +55,7 @@ $(TARGET): $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES) -MMD -MP
 
 run: $(TARGET)
 	./$(TARGET) dados/pedidos.txt dados/historico.txt
@@ -62,3 +63,5 @@ run: $(TARGET)
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 	@echo Limpeza concluida
+
+-include $(DEPS)

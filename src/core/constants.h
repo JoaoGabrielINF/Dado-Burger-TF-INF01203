@@ -1,6 +1,7 @@
 
 
 #pragma once
+#include <stdbool.h>
 /** Numero de linhas da matriz do mapa */
 #define MAPA_LINHAS 16
 /** Numero de colunas da matriz do mapa */
@@ -15,9 +16,6 @@
 #define MAPA_RECEPCAO 0
 /** Indice do mapa da cozinha no vetor de mapas */
 #define MAPA_COZINHA 1
-
-/** Numero de clientes por partida */
-#define CLIENTES_POR_PARTIDA 7
 
 /** Altura reservada para a HUD em pixels */
 #define HUD_ALTURA 80
@@ -168,9 +166,13 @@
 /** Velocidade de deslocamento do jogador, em pixels por segundo */
 #define VELOCIDADE_JOGADOR 180.0f
 
-/** Máximo de clientes desenhados ao mesmo tempo na fila */
-#define MAX_CLIENTES_VISIVEIS 6
+/** Velocidade de deslocamento dos clientes, em pixels por segundo */
+#define VELOCIDADE_CLIENTE 120.0f
 
+/** Máximo de clientes desenhados ao mesmo tempo na fila */
+#define MAX_CLIENTES_VISIVEIS 10
+
+/** Máximmo de clientes que são processados na fila do jogo */
 #define MAX_CLIENTES_FILA 10
 
 /** Limites do desenho do personagem dentro do frame de 72x72 do sprite sheet
@@ -183,7 +185,26 @@
 /** Duração do cozimento de um alimento, medida em turnos */
 #define TURNOS_COZIMENTO 3
 
+/** Numero maximo de ingredientes */
+#define MAXIMO_INGREDIENTES 7
 
+/** Numero de alimentos perenes no jogo */
+#define MAXIMO_PERENES 6
+
+
+typedef enum{
+    ADICIONA = true,
+    REMOVE = false,
+} OpcoesPilha;
+
+typedef enum{
+    PICLES = 0,
+    ALFACE = 1,
+    QUEIJO_SUICO = 2,
+    QUEIJO_CHEDDAR = 3,
+    CEBOLA = 4,
+    TOMATE = 5,
+} AlimentosPerenes;
 
  typedef enum {
     ILIMITADO = 0, /**< Alimento que não acaba */

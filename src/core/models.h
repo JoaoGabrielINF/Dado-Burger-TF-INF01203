@@ -17,15 +17,30 @@ typedef struct {
     ListaReceita receita_pedido; /**< Ingredientes necessários para a receita */
     PilhaHamburger pilha_hamburger; /**< Ingredientes montados para o hambúrguer */
     bool pedido_pronto; /**< Indica se o pedido está pronto */
+    bool pedido_entregue; /**< Indica se o pedido foi entregue */
+    char adicionar_pilha; /**< Caractere à ser adicionado na pilha */
+    OpcoesPilha opcao; /**< Verifica se o jogador quer adicionar ou remover item da pilha, true se adiciona, false se remove */
+    int quantidade_ingredientes_adicionados;/**< Numero de ingredientes adicionados na pilha */
+    
  } Pedido;
 
-/**
+ /**
+ * @brief Estoque de alimentos perenes
+ */
+
+typedef struct {
+    char alimento; /**< Simbolo do alimento do estoque */
+    int quantidade; /**< Quantidade do alimento do simbolo */
+} EstoquePerenes;
+
+ /**
  * @brief Estado completo do jogador durante a partida 
  */
 
 typedef struct {
     Vector2 posicao; /**< Posição atual do jogador em pixel */
     HeapEstoque heap_estoque[QUANTIDADE_ALIMENTOS_PERECIVEIS]; /**< Estoque de perecíveis armazenado em heap */
+    EstoquePerenes estoque_perenes[MAXIMO_PERENES];
     float velocidade; /**< Velocidade do jogador */
     TileAtual tile_atual; /**< Tile ocupado pelo jogador */
     Pedido pedido_atual; /**< Pedido feito pelo cliente */
@@ -46,8 +61,10 @@ typedef struct {
     Vector2 posicao_pixels; /**< Posição do equipamento em pixels */
     TileAtual tile_atual; /**< Posição do equipamento no mapa */
     Rectangle hitbox;
+    char alimento_preparado;
     bool em_uso; /**< Indica se o equipamento está em uso */
-    float tempo_preparo_restante; /**< Tempo restante no preparo de um alimento */
+    bool foi_utilizado; /**< Indica se o equipamento foi utilizado uma vez */
+    int turno_pronto; /**< Tempo restante no preparo de um alimento */
 } EquipamentoCozinha;
 
 /**
@@ -66,10 +83,12 @@ typedef struct {
     Jogador jogador; /**< Personagem do jogador */
     EquipamentoCozinha equipamentos[NUMERO_EQUIPAMENTOS]; /**< Equipamentos da cozinha */
     int turno_atual; /**< Turno atual em que o jogo se encontra */
+    bool aumentou_turno; /**< Indica se o turno aumentou */
     FilaClientes fila_clientes; /**< Fila de clientes */
-    int pontuacao; /**< Pontuacao obtida pelo jogador */
+    int pontuacao; /**< Pontuacao obtida pelo jogador - numero de clientes atendidos até o momento */
     TelaAtual tela_atual; /**< Tela atual que o jogo está apresentando */
     bool jogando; /**< Indica se uma partida está em andamento */
     float tempo; /**< Tempo decorrido na partida */
     Mapa mapa[NUMERO_MAPAS]; /**< Mapas da partida: recepcao e cozinha */
+    bool proximo_cliente; /**< Indica se é para a fila andar/viro proximo cliente */
 } Jogo;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include "data_structures/lista_receita.h"
 #include "data_structures/pilha_hamburger.h"
 #include "entidade.h"
@@ -17,4 +18,5 @@
     TileAtual tile_atual; /**< Tile ocupado pelo cliente */
     TileAtual tile_inicial; /**< Tile inicial do cliente */
     int textura_atual; /**< Índice da textura atual do cliente */
+    bool andando; /**< Indica se o cliente está se movendo */
  } Cliente;

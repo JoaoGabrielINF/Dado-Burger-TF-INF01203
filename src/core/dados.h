@@ -12,7 +12,9 @@ extern ListaContHistorico historico_partidas;
 // Cache de pedidos indexado por código (4.3 no PDF da atv). durante a partida, entra no fluxo sorteio -> hash -> miss -> AVL.
 extern TabelaHash cache_pedidos;
 
+extern int maior_codigo_avl;
+
 /**
- * @brief Inicializa as 3 variáveis da AVL de pedidos, histórico de partidas e cache de pedidos.
+ * @brief Inicializa as estruturas globais e zera o maior código de pedido da AVL.
  */
 void dados_inicializar(void);

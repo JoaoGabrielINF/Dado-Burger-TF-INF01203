@@ -10,6 +10,8 @@
 #include "io/historico_io.h"
 #include "presentation/mapa.h"
 #include "gameplay/jogador.h"
+#include "gameplay/jogo.h"
+#include <time.h>
 
 static void carrega_estruturas_da_tela(Jogo *jogo)
 {
@@ -73,7 +75,8 @@ int main(int argc, char **argv)
         fclose(log_carga);
     }
 
-    Jogo meu_jogo = {0};
+    Jogo meu_jogo;
+    inicializa_jogo(&meu_jogo);
     if (!carregar_mapa("dados/tela_jogo_saguao.txt", meu_jogo.mapa[MAPA_RECEPCAO].tiles))
     {
         return 1;
@@ -82,8 +85,11 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-
+    
     carrega_estruturas_mapa(meu_jogo.mapa[MAPA_RECEPCAO].tiles, &meu_jogo);
+    // Aloca clientes na fila
+    inicializa_clientes(&meu_jogo);
+  
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(JANELA_LARGURA, JANELA_ALTURA, "Dado Burger");
@@ -93,11 +99,13 @@ int main(int argc, char **argv)
     RenderTexture2D alvo = LoadRenderTexture(JANELA_LARGURA, JANELA_ALTURA);
     SetTextureFilter(alvo.texture, TEXTURE_FILTER_BILINEAR);
 
-    meu_jogo.tela_atual = MENU;
-
     carregaAssets();
-    animacao_inicializar(&meu_jogo.jogador.animacao);
 
+    bool primeiro_cliente = true;
+
+
+    meu_jogo.jogador.estoque_perenes[0].quantidade = 10;
+    meu_jogo.jogador.heap_estoque[0].tamanho_heap = 10;
     while (!WindowShouldClose())
     {
         if (IsKeyPressed(KEY_F11))
@@ -118,7 +126,24 @@ int main(int argc, char **argv)
         /* movimentação do jogador (com colisão contra o mapa) nas telas jogáveis */
         if (meu_jogo.tela_atual == RECEPCAO || meu_jogo.tela_atual == COZINHA)
         {
+            meu_jogo.jogando = true;
             atualiza_jogador(&meu_jogo);
+            // Realiza a inicialização do pedido do 1° cliente
+            if(primeiro_cliente){
+                inicializa_pedido_cliente(&meu_jogo);
+                primeiro_cliente = false;
+            }
+
+            if(meu_jogo.jogador.pedido_atual.pedido_entregue){
+                Cliente cliente_removido;
+                dequeueFila(&meu_jogo.fila_clientes, &cliente_removido);
+                meu_jogo.pontuacao++;
+                if(!estaVaziaFila(&meu_jogo.fila_clientes)){
+                    meu_jogo.proximo_cliente = true;
+                    inicializa_pedido_cliente(&meu_jogo);
+                    
+                }
+            }
         }
 
         /* 1. desenha tudo na textura lógica */

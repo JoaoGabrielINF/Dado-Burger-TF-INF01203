@@ -14,6 +14,20 @@ Texture2D mochila;
 static bool estoque_aberto;
 static int pagina_estoque;
 enum { NUMERO_ALIMENTOS_ESTOQUE = 12 };
+enum {
+    NUMERO_CLIENTES = 6,
+    FRAMES_POR_CLIENTE = 3,
+    TAMANHO_FRAME_CLIENTE = 72
+};
+static const char *const caminhos_clientes[NUMERO_CLIENTES] = {
+    "assets/imagens/clientes/cliente_1.png",
+    "assets/imagens/clientes/cliente_2.png",
+    "assets/imagens/clientes/cliente_3.png",
+    "assets/imagens/clientes/cliente_4.png",
+    "assets/imagens/clientes/cliente_5.png",
+    "assets/imagens/clientes/cliente_6.png"
+};
+static Texture2D texturas_clientes[NUMERO_CLIENTES];
 static const char *const caminhos_alimentos_estoque[NUMERO_ALIMENTOS_ESTOQUE] = {
     "assets/imagens/ingredientes/pao_cima.png",
     "assets/imagens/ingredientes/ketchup.png",
@@ -58,6 +72,9 @@ void carregaAssets(void)
     mochila = LoadTexture("assets/imagens/mochila.png");
     for (int i = 0; i < NUMERO_ALIMENTOS_ESTOQUE; i++) {
         texturas_alimentos_estoque[i] = LoadTexture(caminhos_alimentos_estoque[i]);
+    }
+    for (int i = 0; i < NUMERO_CLIENTES; i++) {
+        texturas_clientes[i] = LoadTexture(caminhos_clientes[i]);
     }
 }
 
@@ -361,6 +378,127 @@ void desenhaJogador(Jogador *jogador)
                    retangulo_jogador, centro, 0.0f, WHITE);
 }
 
+void desenha_fila(const FilaClientes *fila)
+{
+    const NodoFila *nodo = fila != NULL ? fila->frente : NULL;
+    int desenhados = 0;
+
+    while (nodo != NULL && desenhados < MAX_CLIENTES_VISIVEIS) {
+        const Cliente *cliente = &nodo->cliente;
+        int indice_textura = cliente->textura_atual - 1;
+        int frame = cliente->animacao.atual;
+
+        if (indice_textura >= 0 && indice_textura < NUMERO_CLIENTES &&
+            frame >= 1 && frame <= FRAMES_POR_CLIENTE) {
+            Rectangle origem = {
+                (float)(frame - 1) * TAMANHO_FRAME_CLIENTE,
+                0.0f,
+                (float)TAMANHO_FRAME_CLIENTE,
+                (float)TAMANHO_FRAME_CLIENTE
+            };
+            Rectangle destino = {
+                cliente->posicao.x - TILE_SIZE * 0.75f,
+                cliente->posicao.y - TILE_SIZE * 0.375f,
+                TILE_SIZE * 1.75f,
+                TILE_SIZE * 1.75f
+            };
+
+            DrawTexturePro(texturas_clientes[indice_textura], origem, destino,
+                           (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
+        }
+
+        nodo = nodo->prox;
+        desenhados++;
+    }
+}
+
+void desenha_paciencia_cliente(const Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+
+    Rectangle barra = {
+        TILE_SIZE,
+        TILE_SIZE,
+        TILE_SIZE / 3.0f,
+        JANELA_ALTURA / 3.0f
+    };
+    DrawRectangleRec(barra, LIGHTGRAY);
+
+    const NodoFila *frente = jogo->fila_clientes.frente;
+    if (frente != NULL) {
+        int paciencia_maxima = PACIENCIA_MAXIMA_FACIL;
+        switch (jogo->dificuldade) {
+        case MEDIO:
+            paciencia_maxima = PACIENCIA_MAXIMA_MEDIO;
+            break;
+        case DIFICIL:
+            paciencia_maxima = PACIENCIA_MAXIMA_DIFICIL;
+            break;
+        case FACIL:
+        default:
+            break;
+        }
+
+        int paciencia = frente->cliente.paciencia_atual;
+        float proporcao = (float)paciencia / paciencia_maxima;
+        if (proporcao < 0.0f)
+            proporcao = 0.0f;
+        else if (proporcao > 1.0f)
+            proporcao = 1.0f;
+
+        Rectangle preenchimento = {
+            barra.x + 2.0f,
+            barra.y + 2.0f + (barra.height - 4.0f) * (1.0f - proporcao),
+            barra.width - 4.0f,
+            (barra.height - 4.0f) * proporcao
+        };
+        Color cor = paciencia > 5 ? GREEN : paciencia > 2 ? ORANGE : RED;
+        DrawRectangleRec(preenchimento, cor);
+    }
+
+    DrawRectangleLinesEx(barra, 2.0f, BLACK);
+}
+
+void anda_fila(Jogo *jogo)
+{
+    if (jogo == NULL)
+        return;
+
+    float passo = VELOCIDADE_CLIENTE * GetFrameTime();
+    bool ainda_andando = false;
+
+    for (NodoFila *nodo = jogo->fila_clientes.frente;
+         nodo != NULL;
+         nodo = nodo->prox) {
+        Cliente *cliente = &nodo->cliente;
+        int destino_coluna = cliente->tile_atual.coluna + 1;
+        float destino_x = destino_coluna * TILE_SIZE;
+        float distancia = destino_x - cliente->posicao.x;
+
+        if (distancia <= 0.0f) {
+            cliente->posicao.x = destino_x;
+            cliente->andando = false;
+        } else if (distancia <= passo) {
+            cliente->posicao.x = destino_x;
+            cliente->andando = false;
+        } else {
+            cliente->posicao.x += passo;
+            cliente->andando = true;
+            ainda_andando = true;
+        }
+    }
+
+    jogo->proximo_cliente = ainda_andando;
+    if (!ainda_andando) {
+        for (NodoFila *nodo = jogo->fila_clientes.frente;
+             nodo != NULL;
+             nodo = nodo->prox) {
+            nodo->cliente.tile_atual.coluna++;
+        }
+    }
+}
+
 void desenhaEquipamentos(const Jogo * jogo){
     int equipamento_destacado = -1;
     for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++) {
@@ -409,7 +547,7 @@ void desenhaEquipamentos(const Jogo * jogo){
                    equipamento_destacado == BANCADA ? tinta_destaque : WHITE);
 }
 
-void desenha_alimentos_no_estoque(Rectangle retangulo_estoque)
+void desenha_alimentos_no_estoque(Rectangle retangulo_estoque, const Jogo* jogo)
 {
     const float margem = 16.0f;
     const float largura_barra = 20.0f;
@@ -482,6 +620,9 @@ void desenha_alimentos_no_estoque(Rectangle retangulo_estoque)
     DrawRectangleRounded(indicador, 0.3f, 4, GRAY);
 
     for (int i = 0; i < quantidade_alimentos; i++) {
+        const int fim_ilimitados = 2;
+        const int fim_perenes = 8;
+        const int fim_pereciveis = 11;
         const int indice_alimento = pagina_estoque * 7 + i;
         Rectangle retangulo_alimento = {
             x_alimentos,
@@ -509,13 +650,23 @@ void desenha_alimentos_no_estoque(Rectangle retangulo_estoque)
         DrawTextEx(fonte_jogo, nomes_alimentos_estoque[indice_alimento],
                    (Vector2){x_texto, retangulo_alimento.y + 8.0f},
                    16.0f, 1.0f, BLACK);
-        DrawTextEx(fonte_jogo, "Quantidade: 0",
+        char quantia[10];
+        if (indice_alimento <= fim_ilimitados) {
+            snprintf(quantia, sizeof(quantia), "%s", "ILIMITADO");
+        } else if (indice_alimento <= fim_perenes) {
+            snprintf(quantia, sizeof(quantia), "%d",
+                     jogo->jogador.estoque_perenes[indice_alimento - 3].quantidade);
+        } else if (indice_alimento <= fim_pereciveis) {
+            snprintf(quantia, sizeof(quantia), "%d",
+                     jogo->jogador.heap_estoque[indice_alimento - 9].tamanho_heap);
+        }
+        DrawTextEx(fonte_jogo, quantia,
                    (Vector2){x_texto, retangulo_alimento.y + 36.0f},
                    14.0f, 1.0f, DARKGRAY);
     }
 }
 
-void desenha_estoque(void)
+void desenha_estoque(const Jogo* jogo)
 {
     const float largura_estoque = JANELA_LARGURA / 4.0f;
     const float topo_mochila = JANELA_ALTURA - 136.0f;
@@ -531,7 +682,7 @@ void desenha_estoque(void)
 
     DrawRectangleRec(retangulo_estoque, RED);
     DrawRectangleLinesEx(retangulo_estoque, 3.0f, BLACK);
-    desenha_alimentos_no_estoque(retangulo_estoque);
+    desenha_alimentos_no_estoque(retangulo_estoque, jogo);
 }
 
 void desenhaJogo(Jogo *jogo)
@@ -851,6 +1002,11 @@ void desenhaJogo(Jogo *jogo)
         Rectangle origem = {0, 0, (float)recepcao.width, (float)recepcao.height};
         Rectangle destino = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(recepcao, origem, destino, (Vector2){0, 0}, 0.0f, WHITE);
+        desenha_paciencia_cliente(jogo);
+        if (jogo->proximo_cliente) {
+            anda_fila(jogo);
+        }
+        desenha_fila(&jogo->fila_clientes);
         desenhaJogador(&jogo->jogador);
         atualiza_anim_entidades(jogo);
         float distancia_para_cozinha = (MAPA_COLUNAS - 2) * TILE_SIZE;
@@ -865,6 +1021,7 @@ void desenhaJogo(Jogo *jogo)
         Rectangle origem_2 = {0, 0, (float)cozinha.width, (float)cozinha.height};
         Rectangle destino_2 = {0, 0, JANELA_LARGURA, JANELA_ALTURA}; /* 1280x720 */
         DrawTexturePro(cozinha, origem_2, destino_2, (Vector2){0, 0}, 0.0f, WHITE);
+        desenha_paciencia_cliente(jogo);
         atualiza_hitbox_jogador(&jogo->jogador);
         desenhaEquipamentos(jogo);
         desenhaJogador(&jogo->jogador);
@@ -883,7 +1040,7 @@ void desenhaJogo(Jogo *jogo)
             estoque_aberto = !estoque_aberto;
         }
         if (estoque_aberto) {
-            desenha_estoque();
+            desenha_estoque(jogo);
         }
         DrawRectangleRounded(fundo_mochila, 0.2f, 8, WHITE);
         if (mochila_em_foco) {
@@ -897,6 +1054,11 @@ void desenhaJogo(Jogo *jogo)
         DrawRectangleRoundedLinesEx(fundo_mochila, 0.2f, 8, 2.0f, BLACK);
         desenhaComanda(&jogo->jogador.pedido_atual.receita_pedido);
         atualiza_anim_entidades(jogo);
+        float distancia_para_saguao = (MAPA_COLUNAS - 31) * TILE_SIZE;
+        if(jogo->jogador.posicao.x <= distancia_para_saguao){
+            jogo->tela_atual = RECEPCAO;
+        }
+        break;
     default:
         break;
     }
@@ -911,6 +1073,9 @@ void descarregaAssets(void)
     for (int i = 0; i < NUMERO_ALIMENTOS_ESTOQUE; i++) {
         UnloadTexture(texturas_alimentos_estoque[i]);
     }
+    for (int i = 0; i < NUMERO_CLIENTES; i++) {
+        UnloadTexture(texturas_clientes[i]);
+        }
     UnloadTexture(fundo);
     UnloadTexture(parede_baixo);
 }

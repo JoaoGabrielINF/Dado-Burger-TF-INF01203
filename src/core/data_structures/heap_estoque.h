@@ -6,7 +6,7 @@
 typedef struct {
     int tamanho_heap; /**< Quantidade de alimentos armazenados na heap */
     char alimento; /**< Alimento específico desse estoque */
-    int validade_alimentos[MAX_ALIM] /**< Vetor da heap de validades */
+    int validade_alimentos[MAX_ALIM]; /**< Vetor da heap de validades */
 } HeapEstoque;
 
 /**
@@ -53,8 +53,9 @@ bool removerHeap(HeapEstoque *heap, char* alimento);
  * @brief Verifica qual é o turno de vencimento do elemento do topo. Se for igual ao turno atual, remove o elemento  do estoque. Realiza essa operação até o elemento do topo da min_heap ser maior que o turno atual
  * @param[in,out] heap heap de estoque consultada e atualizada
  * @param[in] turno_atual turno atual usado para verificar o vencimento
+ * param[out] ponteiro para o caractere que vai absorver o elemento removido da heap
  * @return true se havia alimento vencido no topo
  * @return false se o alimento do topo não venceu
  */
-bool consultarTopoHeap(HeapEstoque *heap, int turno_atual);
+bool consultarTopoHeap(HeapEstoque *heap, int turno_atual, char *alimento);
 
