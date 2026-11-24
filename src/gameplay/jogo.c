@@ -2,9 +2,12 @@
 
 void inicializa_clientes(Jogo *jogo)
 {
+    if (!jogo) {
+        return;
+    }
+
     Cliente cliente_padrao;
-    if (!jogo || !dequeueFila(&jogo->fila_clientes, &cliente_padrao))
-    {
+    if (!dequeueFila(&jogo->fila_clientes, &cliente_padrao)) {
         return;
     }
 
@@ -109,9 +112,6 @@ void inicializa_pedido_cliente(Jogo *jogo)
         // se o valor da chave por diferente de null -> HIT
         metricas.hash_hits++;
         copiaLista(&jogo->jogador.pedido_atual.receita_pedido, &lista);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
     }
     else
     {
@@ -126,9 +126,6 @@ void inicializa_pedido_cliente(Jogo *jogo)
             metricas.hash_colisoes++;
         }
         copiaLista(&jogo->jogador.pedido_atual.receita_pedido, &pedido_buscado->dado.receita_pedido);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
-        imprimirLista(&jogo->jogador.pedido_atual.receita_pedido);
     }
 
     reiniciaPilha(&jogo->jogador.pedido_atual.pilha_hamburger);

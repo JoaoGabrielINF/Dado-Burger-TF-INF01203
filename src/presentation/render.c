@@ -899,8 +899,9 @@ void desenha_opcoes_equipamentos(Jogo *jogo)
                         }
                     }
                 }
-                
-                if(ta_no_estoque && !(tamanhoPilha(&jogo->jogador.pedido_atual.pilha_hamburger) == tamanhoLista(&jogo->jogador.pedido_atual.receita_pedido))){
+                char topo_pilha;
+                topoPilha(&jogo->jogador.pedido_atual.pilha_hamburger, &topo_pilha);
+                if((topo_pilha != PAO_SIMBOLO) && ta_no_estoque && !(tamanhoPilha(&jogo->jogador.pedido_atual.pilha_hamburger) == tamanhoLista(&jogo->jogador.pedido_atual.receita_pedido))){
                 jogo->jogador.pedido_atual.adicionar_pilha =
                     simbolos_bancada[i];
                 jogo->jogador.pedido_atual.opcao = ADICIONA;
