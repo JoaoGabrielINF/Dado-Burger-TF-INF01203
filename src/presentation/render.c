@@ -1697,7 +1697,7 @@ void desenha_jogo(Jogo *jogo)
         {
             jogo->tela_atual = HISTORICO;
         }
-        desenha_texto_centralizado(fonte_jogo, "Historico", botao_historico, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
+        desenha_texto_centralizado(fonte_jogo, "Histórico", botao_historico, TAMANHO_FONTE_BOTAO, ESPACO_FONTE, BLACK);
 
         break;
 
@@ -1827,26 +1827,26 @@ void desenha_jogo(Jogo *jogo)
 
         static const char *col_controles[] = {
             "WASD: andar pela cozinha.",
-            "E: interagir (fogao, tabua, bancada, estoque, prato).",
-            "Andar e consultar nao gastam turno.",
-            "Gastam 1 turno: preparar um ingrediente, adicionar ao hamburguer e remover o topo.",
+            "E: entregar para o cliente.",
+            "Andar e consultar não gastam turno.",
+            "Gastam 1 turno: preparar um ingrediente, adicionar ao hambúrguer e remover o topo.",
             NULL};
 
         static const char *col_ingredientes[] = {
-            "Ilimitados (sem preparo): pao z, ketchup k, mostarda m, picles p, alface a.",
-            "Perenes (preparar e guardar): suico s, cheddar q, cebola c, tomate t.",
-            "Pereciveis (vencem em turnos): carne n, ovo frito o, bacon b.",
-            "Vencido e descartado sozinho.",
+            "Ilimitados (sem preparo): pão, ketchup e mostarda.",
+            "Perenes (preparar e guardar): picles, alface, queijo suico, queijo cheddar, cebola e tomate.",
+            "Perecíveis (vencem em turnos): carne, ovo frito e bacon.",
+            "Vencido é descartado sozinho.",
             NULL};
 
         static const char *col_regras[] = {
             "Atenda o cliente da frente.",
             "Monte na ordem do pedido, de baixo para cima.",
-            "O pao de baixo ja esta no prato.",
-            "Feche com o pao de cima (z).",
-            "So a paciencia do primeiro da fila diminui a cada turno.",
-            "Vitoria: atender todos.",
-            "Derrota: paciencia zerada.",
+            "O pão de baixo já está no prato.",
+            "Feche com o pão de cima.",
+            "Só a paciência do primeiro da fila diminui a cada turno.",
+            "Vitória: atender todos.",
+            "Derrota: paciência zerada.",
             NULL};
 
         static const char **colunas[3] = {col_controles, col_ingredientes, col_regras};
@@ -1883,7 +1883,7 @@ void desenha_jogo(Jogo *jogo)
         DrawRectangleRec(painel_corpo, ORANGE);
         DrawRectangleLinesEx(painel_corpo, 2.0f, BLACK);
 
-        desenha_texto_centralizado(fonte_jogo, "HISTORICO", painel_titulo,
+        desenha_texto_centralizado(fonte_jogo, "HISTÓRICO", painel_titulo,
                                  TAMANHO_FONTE_TITULO, ESPACO_FONTE, BLACK);
 
         /* botão Voltar (sem ele não tem como sair da tela) */
