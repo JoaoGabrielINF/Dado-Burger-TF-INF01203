@@ -332,12 +332,13 @@ void reinicia_jogo(Jogo *jogo)
     destruirLista(&jogo->jogador.pedido_atual.receita_pedido);
     reiniciaHash(&cache_pedidos);
 
+    jogo->fim_partida.voltar_ao_menu = false;
+    jogo->tela_atual = MENU;
     jogo->dificuldade = FACIL;
     jogo->turno_atual = 0;
     jogo->pontuacao = 0;
     jogo->jogando = false;
     jogo->tempo = 0.0f;
-    jogo->tela_atual = MENU;
     jogo->jogador.velocidade = VELOCIDADE_JOGADOR;
     jogo->jogador.pedido_atual.pedido_pronto = false;
     jogo->jogador.pedido_atual.pedido_entregue = false;
@@ -345,7 +346,7 @@ void reinicia_jogo(Jogo *jogo)
     jogo->fim_partida.nome[0] = '\0';
     jogo->fim_partida.pontuacao = 0; /* TODO: configurar cálculo adicional da pontuação */
     jogo->fim_partida.salvo = false;
-    jogo->fim_partida.caminho_historico = NULL;
+    /* O caminho do histórico pertence à execução e permanece entre partidas. */
     jogo->primeiro_cliente = true;
 
     for (int i = 0; i < NUMERO_EQUIPAMENTOS; i++)
@@ -386,6 +387,7 @@ void reinicia_jogo(Jogo *jogo)
     }
 
     inicializa_clientes(jogo);
+    
 }
 
 void atualiza_jogo(Jogo *jogo)

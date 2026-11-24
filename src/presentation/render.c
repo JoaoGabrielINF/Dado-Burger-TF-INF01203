@@ -1538,9 +1538,7 @@ static void desenha_formulario_fim_partida(Jogo *jogo,
             jogo->fim_partida.salvo = false;
             jogo->fim_partida.relatorio_visivel = false;
             jogo->fim_partida.voltar_ao_menu = true;
-            reinicia_jogo(jogo);
-            jogo->fim_partida.voltar_ao_menu = false;
-            jogo->tela_atual = MENU;
+            
         }
         return;
     }

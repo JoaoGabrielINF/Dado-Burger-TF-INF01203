@@ -87,11 +87,10 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-    
+
     carrega_estruturas_mapa(meu_jogo.mapa[MAPA_RECEPCAO].tiles, &meu_jogo);
     // Aloca clientes na fila
     inicializa_clientes(&meu_jogo);
-  
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(JANELA_LARGURA, JANELA_ALTURA, "Dado Burger");
@@ -123,27 +122,40 @@ int main(int argc, char **argv)
 
         switch (meu_jogo.tela_atual)
         {
+        case VITORIA:
+        case DERROTA:
+        case SAIDA_VOLUNTARIA:
+            if (meu_jogo.fim_partida.voltar_ao_menu)
+                reinicia_jogo(&meu_jogo);
+
+            break;
         case RECEPCAO:
         case COZINHA:
             meu_jogo.jogando = true;
             if (IsKeyPressed(KEY_ESCAPE))
                 meu_jogo.saindo_partida = true;
-            if (!meu_jogo.saindo_partida) {
+            if (!meu_jogo.saindo_partida)
+            {
                 atualiza_jogador(&meu_jogo);
                 atualiza_jogo(&meu_jogo);
-                if (meu_jogo.primeiro_cliente) {
+                if (meu_jogo.primeiro_cliente)
+                {
                     inicializa_pedido_cliente(&meu_jogo);
                     meu_jogo.primeiro_cliente = false;
                 }
 
-                if (meu_jogo.jogador.pedido_atual.pedido_entregue) {
+                if (meu_jogo.jogador.pedido_atual.pedido_entregue)
+                {
                     Cliente cliente_removido;
                     dequeueFila(&meu_jogo.fila_clientes, &cliente_removido);
                     meu_jogo.pontuacao++;
-                    if (!estaVaziaFila(&meu_jogo.fila_clientes)) {
+                    if (!estaVaziaFila(&meu_jogo.fila_clientes))
+                    {
                         meu_jogo.proximo_cliente = true;
                         inicializa_pedido_cliente(&meu_jogo);
-                    } else {
+                    }
+                    else
+                    {
                         meu_jogo.tela_atual = VITORIA;
                         meu_jogo.jogando = false;
                         metricas.hash_n = cache_pedidos.n;
@@ -152,7 +164,8 @@ int main(int argc, char **argv)
                 }
 
                 if (!estaVaziaFila(&meu_jogo.fila_clientes) &&
-                    meu_jogo.fila_clientes.frente->cliente.paciencia_atual <= 0) {
+                    meu_jogo.fila_clientes.frente->cliente.paciencia_atual <= 0)
+                {
                     meu_jogo.tela_atual = DERROTA;
                     meu_jogo.jogando = false;
                     metricas.hash_n = cache_pedidos.n;
@@ -160,15 +173,10 @@ int main(int argc, char **argv)
                 }
             }
             break;
-        case VITORIA:
-        case DERROTA:
-        case SAIDA_VOLUNTARIA:
-            break;
+
         default:
             break;
         }
-
-        
 
         /* 1. desenha tudo na textura lógica */
         TelaAtual tela_anterior = meu_jogo.tela_atual;
@@ -191,7 +199,8 @@ int main(int argc, char **argv)
 
     /* §5.2: saída voluntária (fechar a janela no meio da partida) também
        registra o Relatório de Desempenho antes de encerrar. */
-    if (meu_jogo.jogando) {
+    if (meu_jogo.jogando)
+    {
         meu_jogo.jogando = false;
         metricas.hash_n = cache_pedidos.n;
         medicoes_gravar_relatorio_em_arquivo("medicoes.log");
